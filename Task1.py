@@ -13,7 +13,7 @@ class Task1:
         self.features_frame = tk.Frame(self.frame)
         self.features_frame.grid(row=0, column=0, padx=20)
 
-        self.label_features = tk.Label(self.features_frame, text="Select Features:")
+        self.label_features = tk.Label(self.features_frame, text="Select 2 Features:")
         self.label_features.pack(anchor='w')
 
         self.features = ["gender", "body_mass", "beak_length", "beak_depth", "fin_length"]
@@ -29,7 +29,7 @@ class Task1:
         self.classes_frame = tk.Frame(self.frame)
         self.classes_frame.grid(row=0, column=1, padx=20)
 
-        self.label_classes = tk.Label(self.classes_frame, text="Select Classes:")
+        self.label_classes = tk.Label(self.classes_frame, text="Select 2 Classes:")
         self.label_classes.pack(anchor='w')
 
         self.classes = ["C1", "C2", "C3"]
@@ -71,27 +71,17 @@ class Task1:
         self.label_algorithm = tk.Label(self.algorithms_frame, text="Algorithm Type:")
         self.label_algorithm.pack(anchor='w')
 
-        self.radio_algorithm1 = tk.Radiobutton(self.algorithms_frame, text="Algorithm 1", variable=self.algorithm_var, value="Algorithm1")
-        self.radio_algorithm2 = tk.Radiobutton(self.algorithms_frame, text="Algorithm 2", variable=self.algorithm_var, value="Algorithm2")
+        self.radio_algorithm1 = tk.Radiobutton(self.algorithms_frame, text="Perceptron ", variable=self.algorithm_var, value="Algorithm1")
+        self.radio_algorithm2 = tk.Radiobutton(self.algorithms_frame, text="Adaline", variable=self.algorithm_var, value="Algorithm2")
         self.radio_algorithm1.pack(anchor='w')
         self.radio_algorithm2.pack(anchor='w')
 
         # Button to show selected options
-        self.submit_button = tk.Button(self.frame, text="Submit", command=self.show_selected)
+        self.submit_button = tk.Button(self.frame, text="Submit", command=self.run_algorithm)
         self.submit_button.grid(row=1, column=0, columnspan=4, pady=20)
 
 
-
-    def show_selected(self):
-        # Show selected options using getter functions
-        messagebox.showinfo("Selected Options", 
-                            f"Features: {self.get_chosen_features()}\n"
-                            f"Classes: {self.get_chosen_classes()}\n"
-                            f"Learning Rate: {self.get_learning_rate()}\n"
-                            f"Threshold: {self.get_threshold()}\n"
-                            f"Include Bias: {self.bias_var.get()}\n"
-                            f"Algorithm Type: {self.get_algorithm_type()}")
-
+    #Getters
     def get_learning_rate(self):
         return self.learning_rate_entry.get()
 
@@ -106,8 +96,41 @@ class Task1:
 
     def get_algorithm_type(self):
         return self.algorithm_var.get()
+    
+    
+    #Functions
+    def run_algorithm (self):
+        algorithm_type = self.get_algorithm_type()
+
+        if(algorithm_type == "Algorithm1"):
+            self.perceptron()
+        else:
+            self.adaline()
 
 
+    def perceptron(self):
+        #implement perceptron
+        #get values and implment
+        return
+    
+    def adaline(self):
+        #implement perceptron
+        #get values and implment
+        return
+    
+        
+    def show_selected(self):
+        print("Selected Options", 
+                        f"Features: {self.get_chosen_features()}\n"
+                        f"Classes: {self.get_chosen_classes()}\n"
+                        f"Learning Rate: {self.get_learning_rate()}\n"
+                        f"Threshold: {self.get_threshold()}\n"
+                        f"Include Bias: {self.bias_var.get()}\n"
+                        f"Algorithm Type: {self.get_algorithm_type()}")
+    
+
+
+    #GUI Functions
     def display(self):
         self.frame.grid(row=1, column=0, columnspan=2, sticky='nsew')
 
