@@ -26,7 +26,7 @@ class App:
 
 
     def show_task1(self):
-        self.task1_frame.display()  
+        self.task1_frame.display()   
 
     
 # Main Application

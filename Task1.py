@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import pandas as pd
+
 
 class Task1:
     def __init__(self, parent):
@@ -32,7 +34,7 @@ class Task1:
         self.label_classes = tk.Label(self.classes_frame, text="Select 2 Classes:")
         self.label_classes.pack(anchor='w')
 
-        self.classes = ["C1", "C2", "C3"]
+        self.classes = ["A", "B", "C"]
 
         self.classes_list = []
         for c in self.classes:
@@ -100,12 +102,26 @@ class Task1:
     
     #Functions
     def run_algorithm (self):
+        self.read_file()
         algorithm_type = self.get_algorithm_type()
 
         if(algorithm_type == "Algorithm1"):
             self.perceptron()
         else:
             self.adaline()
+
+
+    def read_file(self):
+        dataset = pd.read_csv('birds.csv')
+        print(dataset.head())
+
+
+    def get_classes(self, dataset):
+        class_A = dataset[dataset['category'] == 'A']
+        class_B = dataset[dataset['category'] == 'B']
+        class_C = dataset[dataset['category'] == 'C']  
+              
+        return class_A, class_B, class_C
 
 
     def perceptron(self):
