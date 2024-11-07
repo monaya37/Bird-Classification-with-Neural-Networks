@@ -6,6 +6,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder    
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+
 
 
 class Task1:
@@ -123,13 +125,15 @@ class Task1:
     def run_algorithm (self):
         dataset = self.read_file('birds.csv')
 
+        X = dataset.drop(columns=['bird category'])
+        y = dataset['bird category']
+        
         #this function retruns x and y based on user selection
         X_train, X_test, y_train, y_test = self.split_to_train_test(dataset)
 
-        #TO-DO:
-        #this function should return xtrain and xtest both scaled,
-        #no missing values, enocded, etc
-        X_train, X_test = self.preprocess_data(X_train, X_test)
+        X_train, X_test = self.preprocess(X_train, X_test, self.get_chosen_features())
+        y_train, y_test= self.preprocess_y(y_train, y_test)
+
 
 
         algorithm_type = self.get_algorithm_type()
@@ -139,9 +143,9 @@ class Task1:
             self.perceptron()
         else:
             weights, bias = self.adaline(X_train, y_train)
-            y_pred = self.predict(X_train, weights, bias)
-            accuracy = accuracy_score(y_test, y_pred)
-            print(f"Accuracy on adaline test set: {accuracy * 100:.2f}%")
+            #y_pred = self.predict(X_test, weights, bias)
+            self.plot_function(X_train, y_train, weights, bias)
+
 
 
     def read_file(self, path):
@@ -156,6 +160,72 @@ class Task1:
             class_data.append(dataset[dataset['bird category'] == cls])
         return pd.concat(class_data)
 
+    def preprocess(self, X_train, X_test, selected_features):
+
+        #filling na
+        if 'gender' in X_train.columns:
+            gender_mode = X_train['gender'].mode()[0]
+            X_train['gender'].fillna(gender_mode, inplace=True)
+            X_test['gender'].fillna(gender_mode, inplace=True)
+
+        # Handle outliers in numerical columns using IQR for train and test set
+        # Select numeric columns that are both in the dataset and in selected_features
+        numeric_cols = ['body_mass', 'beak_length', 'beak_depth', 'fin_length']
+        numeric_cols = list(set(numeric_cols) & set(selected_features))
+
+        # Calculate the IQR and bounds using X_train
+        lower_bounds = {}
+        upper_bounds = {}
+
+        for col in numeric_cols:
+            Q1 = X_train[col].quantile(0.25)
+            Q3 = X_train[col].quantile(0.75)
+            IQR = Q3 - Q1
+            lower_bounds[col] = Q1 - 1.5 * IQR
+            upper_bounds[col] = Q3 + 1.5 * IQR
+
+            # Apply outlier handling on X_train by replacing outliers with median
+            median = X_train[col].median()
+            X_train[col] = X_train[col].apply(lambda x: x if lower_bounds[col] <= x <= upper_bounds[col] else median)
+        
+        # Apply the same outlier handling to X_test
+        for col in numeric_cols:
+            # Apply the same bounds calculated from the X_train set to X_test
+            X_test[col] = X_test[col].apply(
+                lambda x: x if lower_bounds[col] <= x <= upper_bounds[col] else X_train[col].median())
+            
+        # Create a LabelEncoder object
+        le = LabelEncoder()
+        # Loop through each column and label encode categorical columns
+        for i in X_train.columns: #iterate over all columns
+            if (X_train[i].dtype == "O"):  # if the column is categorical
+                le.fit(X_train[i])  # fit on the training data
+                X_train[i] = le.transform(X_train[i])  # transform the training data
+                X_test[i] = le.transform(X_test[i])  # transform the test data
+
+        # A--> 0, B--> 1, C-->2       (el encoding)
+        # Normalize the numerical features
+        scaler = StandardScaler()
+        # Select the features to scale
+        col_names= X_train.columns
+        # Fit the scaler on the training data (ONLY on X_train)
+        scaler.fit(X_train[col_names])
+        # Transform the training and test data using the fitted scaler
+        X_train[col_names] = scaler.transform(X_train[col_names])
+        X_test[col_names] = scaler.transform(X_test[col_names])
+            
+        return X_train, X_test
+    
+    def preprocess_y(self, y_train, y_test):
+         # Create a LabelEncoder object
+        le = LabelEncoder()
+        if (y_train.dtype == "O"):  # if the column is categorical
+            le.fit(y_train)  # fit on the training data
+            y_train = le.transform(y_train)  # transform the training data
+            y_test = le.transform(y_test)  # transform the test data
+    
+        return y_train, y_test
+
 
     def perceptron(self):
         #implement perceptron
@@ -165,6 +235,8 @@ class Task1:
 
     #pass preprocessed X
     def adaline(self, X, y_actual):
+        y_actual = np.array(y_actual, dtype=float)
+        X = X.values
 
         epochs = int(self.get_epochs())
         learning_rate = float(self.get_learning_rate())
@@ -172,16 +244,19 @@ class Task1:
         num_of_features = len(self.get_chosen_features())
         include_bias = self.get_bias_state()
 
-        weights = np.ones(num_of_features)
-        bias = 0
+        weights = np.random.randn(num_of_features)
+        bias = np.random.randn(1) / 2
         errors = []
         y_predict = []
+
+        print("x type is: ", type(X))
+
 
         if(include_bias):
 
             for e in range(epochs):
                 for i in range(X.shape[0]):
-
+                    
                     y_predict = sum(weights * X[i]) + bias
                     error = y_actual[i] -  y_predict
                 
@@ -200,7 +275,6 @@ class Task1:
             for e in range(epochs):
 
                 for i in range(X.shape[0]):
-
                     y_predict = sum(weights * X[i]) 
                     error = y_actual[i] -  y_predict
                 
@@ -227,6 +301,7 @@ class Task1:
 
         include_bias = self.get_bias_state()
         predictions = []
+        X_test = X_test.values
 
         if(include_bias):
             for i in range(X_test.shape[0]):
@@ -235,7 +310,6 @@ class Task1:
         else:
             for i in range(X_test.shape[0]):
                 y_predict = np.dot(weights, X_test[i])
-                y_predict = self.signum(y_predict)
                 predictions.append(y_predict)
 
         return np.array(predictions)
@@ -257,10 +331,17 @@ class Task1:
         return X_train, X_test, y_train, y_test
 
 
-    def plot_function(self, X, bias, weights):
+    def plot_function(self, X, Y, weights, bias):
 
         include_bias = self.get_bias_state()
         features = self.get_chosen_features()
+
+        X = X.values
+       
+
+        # Plot the data points    
+        plt.scatter(X[Y == 0, 0], X[Y == 0, 1], color='red', label='Class 0')
+        plt.scatter(X[Y == 1, 0], X[Y == 1, 1], color='blue', label='Class 1')
 
         x1 = np.linspace(min(X[:, 0]), max(X[:, 0]), 100)
 
