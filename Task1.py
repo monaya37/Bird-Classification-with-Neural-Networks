@@ -150,10 +150,10 @@ class Task1:
         return dataset
 
 
-    def get_classes(dataset, selected_classes):
+    def get_classes(self, dataset, selected_classes):
         class_data = []
         for cls in selected_classes:
-            class_data.append(dataset[dataset['category'] == cls])
+            class_data.append(dataset[dataset['bird category'] == cls])
         return pd.concat(class_data)
 
 
@@ -166,10 +166,10 @@ class Task1:
     #pass preprocessed X
     def adaline(self, X, y_actual):
 
-        epochs = self.get_epochs()
-        learning_rate = self.get_learning_rate()
-        threshold = self.get_threshold()
-        num_of_features = self.get_chosen_features().count()
+        epochs = int(self.get_epochs())
+        learning_rate = float(self.get_learning_rate())
+        threshold = float(self.get_threshold())
+        num_of_features = len(self.get_chosen_features())
         include_bias = self.get_bias_state()
 
         weights = np.ones(num_of_features)
@@ -249,7 +249,7 @@ class Task1:
 
         # Select only the chosen features along with the class
         X = filtered_data[selected_features]
-        y = filtered_data['category']
+        y = filtered_data['bird category']
 
         # Train-test split (80-20 ratio)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
