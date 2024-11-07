@@ -3,6 +3,8 @@ from tkinter import ttk, messagebox
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder    
+import matplotlib.pyplot as plt
 
 class Task1:
     def __init__(self, parent):
@@ -110,6 +112,8 @@ class Task1:
     def run_algorithm (self):
         dataset = self.read_file('birds.csv')
         X_train, X_test, y_train, y_test = self.split_to_train_test(dataset)
+        X_train, X_test ,y_train, y_test = self.preprocess_data(X_train, X_test, y_train, y_test)
+
         algorithm_type = self.get_algorithm_type()
 
         if(algorithm_type == "Algorithm1"):
@@ -155,7 +159,7 @@ class Task1:
         if(include_bias):
             while current_error > threshold:
 
-                for i in range(X.shape):
+                for i in range(X.shape[0]):
 
                     y_predict = sum(weights * X[i]) + bias
                     error = y_actual[i] -  y_predict
@@ -171,8 +175,8 @@ class Task1:
         else:
             while current_error > threshold:
 
-                for i in range(X.shape):
-                    
+                for i in range(X.shape[0]):
+
                     y_predict = sum(weights * X[i]) 
                     error = y_actual[i] -  y_predict
                 
@@ -207,6 +211,29 @@ class Task1:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
 
         return X_train, X_test, y_train, y_test
+
+
+    def plot_function(self, X, bias, weights):
+
+        include_bias = self.get_bias_state()
+        features = self.get_chosen_features()
+
+        x1 = np.linspace(min(X[:, 0]), max(X[:, 0]), 100)
+
+        if(include_bias):
+            # Generate points for the decision boundary line
+            x2 = -(weights[0] * x1 + bias) / weights[1]
+        else:
+            x2 = -(weights[0] * x1)
+
+
+        # Plot the decision boundary line
+        plt.plot(x1, x2, color='green', label='Decision Boundary')
+
+        plt.xlabel(features[0])
+        plt.ylabel(features[1])
+        plt.legend()
+        plt.show() 
 
 
     def show_selected(self):
