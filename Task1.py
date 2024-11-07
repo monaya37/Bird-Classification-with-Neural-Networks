@@ -122,8 +122,13 @@ class Task1:
     #Functions
     def run_algorithm (self):
         dataset = self.read_file('birds.csv')
+
+        #this function retruns x and y based on user selection
         X_train, X_test, y_train, y_test = self.split_to_train_test(dataset)
-        X_train, X_test ,y_train, y_test = self.preprocess_data(X_train, X_test, y_train, y_test)
+
+        #this function should return xtrain and xtest both scaled,
+        #no missing values, enocded, etc
+        X_train, X_test = self.preprocess_data(X_train, X_test)
 
 
         algorithm_type = self.get_algorithm_type()
