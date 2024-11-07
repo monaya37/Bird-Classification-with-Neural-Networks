@@ -126,6 +126,7 @@ class Task1:
         #this function retruns x and y based on user selection
         X_train, X_test, y_train, y_test = self.split_to_train_test(dataset)
 
+        #TO-DO:
         #this function should return xtrain and xtest both scaled,
         #no missing values, enocded, etc
         X_train, X_test = self.preprocess_data(X_train, X_test)
@@ -134,6 +135,7 @@ class Task1:
         algorithm_type = self.get_algorithm_type()
 
         if(algorithm_type == "Algorithm1"):
+            #TO-DO:
             self.perceptron()
         else:
             weights, bias = self.adaline(X_train, y_train)
