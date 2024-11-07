@@ -8,7 +8,7 @@ class App:
         self.root = root
 
         self.root.title("ANN TASKS")
-        self.root.geometry("600x600")
+        self.root.geometry("800x900")
         self.root.configure(padx=20, pady=20)
 
         self.button_frame = tk.Frame(root)
