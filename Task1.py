@@ -202,9 +202,13 @@ class Task1:
                     break
 
 
-    def signum_funcation(self):
-
-        return
+    def signum_funcation(self, x):
+        if(x > 0):
+            return 1
+        if(x < 0):
+            return -1
+        else:
+            return 0
 
     def split_to_train_test(self, dataset):
         
