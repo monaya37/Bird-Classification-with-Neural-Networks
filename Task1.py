@@ -125,15 +125,11 @@ class Task1:
     def run_algorithm (self):
         dataset = self.read_file('birds.csv')
 
-        X = dataset.drop(columns=['bird category'])
-        y = dataset['bird category']
-        
         #this function retruns x and y based on user selection
         X_train, X_test, y_train, y_test = self.split_to_train_test(dataset)
 
         X_train, X_test = self.preprocess(X_train, X_test, self.get_chosen_features())
         y_train, y_test= self.preprocess_y(y_train, y_test)
-
 
 
         algorithm_type = self.get_algorithm_type()
@@ -233,23 +229,20 @@ class Task1:
         return
     
 
-    #pass preprocessed X
     def adaline(self, X, y_actual):
-        y_actual = np.array(y_actual, dtype=float)
+
         X = X.values
+        y_actual = np.array(y_actual, dtype=float)
 
         epochs = int(self.get_epochs())
         learning_rate = float(self.get_learning_rate())
         threshold = float(self.get_threshold())
-        num_of_features = len(self.get_chosen_features())
         include_bias = self.get_bias_state()
 
-        weights = np.random.randn(num_of_features)
+        weights = np.random.randn(X.shape[1])
         bias = np.random.randn(1) / 2
         errors = []
         y_predict = []
-
-        print("x type is: ", type(X))
 
 
         if(include_bias):
@@ -325,8 +318,31 @@ class Task1:
         X = filtered_data[selected_features]
         y = filtered_data['bird category']
 
-        # Train-test split (80-20 ratio)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+        class_A = filtered_data['bird category'] == 'A'
+        class_B = filtered_data['bird category'] == 'B'
+        class_C = filtered_data['bird category'] == 'C'
+
+        # train test split before handling outliers
+        X_a = class_A.drop(columns=['bird category'])
+        y_a = class_A['bird category']
+        X_train_a, X_test_a, y_train_a, y_test_a = (train_test_split(X_a, y_a, test_size=0.2, shuffle=True, random_state=0))
+
+        X_b = class_B.drop(columns=['bird category'])
+        y_b = class_B['bird category']
+        X_train_b, X_test_b, y_train_b, y_test_b = train_test_split(X_b, y_b, test_size=0.2, shuffle=True, random_state=0)
+
+        X_c = class_C.drop(columns=['bird category'])
+        y_c = class_C['bird category']
+        X_train_c, X_test_c, y_train_c, y_test_c = train_test_split(X_c, y_c, test_size=0.2, shuffle=True, random_state=0)
+
+
+        # Merge training sets
+        X_train = pd.concat([X_train_a, X_train_b, X_train_c], ignore_index=True)
+        y_train = pd.concat([y_train_a, y_train_b, y_train_c], ignore_index=True)
+
+        # Merge test sets
+        X_test = pd.concat([X_test_a, X_test_b, X_test_c], ignore_index=True)
+        y_test = pd.concat([y_test_a, y_test_b, y_test_c], ignore_index=True)
 
         return X_train, X_test, y_train, y_test
 
