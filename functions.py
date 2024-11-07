@@ -7,9 +7,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from random import shuffle
 from sklearn.utils import shuffle
+import seaborn as sns
 
 #Getters
-
 class functions:
 
     def __init__(self, gui):
@@ -301,6 +301,24 @@ class functions:
 
         print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
         print(f"Accuracy: {accuracy}")
+        self.plot_confusion(TP, TN, FP, FN, accuracy)
+
+    def plot_confusion(self, TP, TN, FP, FN, accuracy):
+
+        self.gui.ax2.clear()
+
+        cm = np.array([[TN, FP], [FN, TP]])
+
+        plt.figure(figsize=(6, 5))
+        sns.heatmap(cm, annot=True, fmt='g', cmap='Blues', cbar=False,
+                    xticklabels=['Predicted 0', 'Predicted 1'], 
+                    yticklabels=['Actual 0', 'Actual 1'])
+        
+        plt.title(f"Confusion Matrix\nAccuracy: {accuracy:.2f}")
+        self.gui.ax2.set_xlabel('Predicted')
+        self.gui.ax2.set_ylabel('Actual')
+        self.gui.ax2.legend()
+        self.gui.canvas2.draw()
 
     def split_to_train_test(self, dataset):
         selected_features = self.get_chosen_features()
