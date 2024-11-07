@@ -5,6 +5,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder    
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score
+
 
 class Task1:
     def __init__(self, parent):
@@ -123,12 +125,16 @@ class Task1:
         X_train, X_test, y_train, y_test = self.split_to_train_test(dataset)
         X_train, X_test ,y_train, y_test = self.preprocess_data(X_train, X_test, y_train, y_test)
 
+
         algorithm_type = self.get_algorithm_type()
 
         if(algorithm_type == "Algorithm1"):
             self.perceptron()
         else:
-            self.adaline()
+            weights, bias = self.adaline(X_train, y_train)
+            y_pred = self.predict(X_train, weights, bias)
+            accuracy = accuracy_score(y_test, y_pred)
+            print(f"Accuracy on adaline test set: {accuracy * 100:.2f}%")
 
 
     def read_file(self, path):
@@ -163,8 +169,6 @@ class Task1:
         bias = 0
         errors = []
         y_predict = []
-
-
 
         if(include_bias):
 
@@ -201,6 +205,8 @@ class Task1:
                 if mse < threshold: #from HUI
                     break
 
+        return weights, bias
+
 
     def signum_funcation(self, x):
         if(x > 0):
@@ -209,6 +215,23 @@ class Task1:
             return -1
         else:
             return 0
+        
+    def predict(self, X_test, weights, bias):
+
+        include_bias = self.get_bias_state()
+        predictions = []
+
+        if(include_bias):
+            for i in range(X_test.shape[0]):
+                y_predict = np.dot(weights, X_test[i]) + bias
+                predictions.append(y_predict)
+        else:
+            for i in range(X_test.shape[0]):
+                y_predict = np.dot(weights, X_test[i])
+                y_predict = self.signum(y_predict)
+                predictions.append(y_predict)
+
+        return np.array(predictions)
 
     def split_to_train_test(self, dataset):
         
