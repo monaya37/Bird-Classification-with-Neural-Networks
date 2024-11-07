@@ -50,6 +50,12 @@ class Task1:
         self.textboxes_frame = tk.Frame(self.frame)
         self.textboxes_frame.grid(row=0, column=2, padx=20)
 
+        # Epochs
+        self.label_epochs = tk.Label(self.textboxes_frame, text="Epochs:")
+        self.label_epochs.pack(anchor='w')
+        self.epochs_entry = tk.Entry(self.textboxes_frame)
+        self.epochs_entry.pack(anchor='w')
+
         # Learning Rate
         self.label_learning_rate = tk.Label(self.textboxes_frame, text="Learning Rate:")
         self.label_learning_rate.pack(anchor='w')
@@ -89,6 +95,9 @@ class Task1:
 
 
     #Getters
+    def get_epochs(self):
+        return self.epochs_entry.get()
+
     def get_learning_rate(self):
         return self.learning_rate_entry.get()
 
@@ -144,6 +153,7 @@ class Task1:
     #pass preprocessed X
     def adaline(self, X, y_actual):
 
+        epochs = self.get_epochs()
         learning_rate = self.get_learning_rate()
         threshold = self.get_threshold()
         num_of_features = self.get_chosen_features().count()
@@ -157,41 +167,40 @@ class Task1:
 
 
         if(include_bias):
-            while current_error > threshold:
 
-                for i in range(X.shape[0]):
+            for e in range(epochs):
+                while current_error > threshold:
 
-                    y_predict = sum(weights * X[i]) + bias
-                    error = y_actual[i] -  y_predict
-                
-                    # update weights and bias
-                    weights = weights + learning_rate * error * X[i]
-                    bias = bias + learning_rate * error
+                    for i in range(X.shape[0]):
 
-                    errors.append((error ** 2))
-                
-                current_error = np.mean(errors)
+                        y_predict = sum(weights * X[i]) + bias
+                        error = y_actual[i] -  y_predict
+                    
+                        # update weights and bias
+                        weights = weights + learning_rate * error * X[i]
+                        bias = bias + learning_rate * error
+
+                        errors.append((error ** 2))
+                    
+                    current_error = np.mean(errors)
 
         else:
-            while current_error > threshold:
 
-                for i in range(X.shape[0]):
+            for e in range(epochs):
+                while current_error > threshold:
 
-                    y_predict = sum(weights * X[i]) 
-                    error = y_actual[i] -  y_predict
-                
-                    # update weights and bias
-                    weights = weights + learning_rate * error * X[i]
-                    errors.append((error ** 2))
-                
-                current_error = np.mean(errors)
+                    for i in range(X.shape[0]):
 
-
-        
-           
+                        y_predict = sum(weights * X[i]) 
+                        error = y_actual[i] -  y_predict
+                    
+                        # update weights and bias
+                        weights = weights + learning_rate * error * X[i]
+                        errors.append((error ** 2))
+                    
+                    current_error = np.mean(errors)
 
 
-    
     def signum_funcation(self):
 
         return
