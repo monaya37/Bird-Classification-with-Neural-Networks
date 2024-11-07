@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 import pandas as pd
-
+import numpy as np
+from sklearn.model_selection import train_test_split
 
 class Task1:
     def __init__(self, parent):
@@ -82,6 +83,8 @@ class Task1:
         self.submit_button = tk.Button(self.frame, text="Submit", command=self.run_algorithm)
         self.submit_button.grid(row=1, column=0, columnspan=4, pady=20)
 
+        self.dataset = None
+
 
     #Getters
     def get_learning_rate(self):
@@ -96,13 +99,17 @@ class Task1:
     def get_chosen_classes(self):
         return [c for c, var in zip(self.classes, self.classes_list) if var.get()]
 
+    def get_bias_state(self):
+        return self.bias_var.get()
+    
     def get_algorithm_type(self):
         return self.algorithm_var.get()
     
     
     #Functions
     def run_algorithm (self):
-        self.read_file()
+        dataset = self.read_file('birds.csv')
+        X_train, X_test, y_train, y_test = self.split_to_train_test(dataset)
         algorithm_type = self.get_algorithm_type()
 
         if(algorithm_type == "Algorithm1"):
@@ -111,17 +118,17 @@ class Task1:
             self.adaline()
 
 
-    def read_file(self):
-        dataset = pd.read_csv('birds.csv')
+    def read_file(self, path):
+        dataset = pd.read_csv(path)
         print(dataset.head())
+        return dataset
 
 
-    def get_classes(self, dataset):
-        class_A = dataset[dataset['category'] == 'A']
-        class_B = dataset[dataset['category'] == 'B']
-        class_C = dataset[dataset['category'] == 'C']  
-              
-        return class_A, class_B, class_C
+    def get_classes(dataset, selected_classes):
+        class_data = []
+        for cls in selected_classes:
+            class_data.append(dataset[dataset['category'] == cls])
+        return pd.concat(class_data)
 
 
     def perceptron(self):
@@ -129,12 +136,79 @@ class Task1:
         #get values and implment
         return
     
-    def adaline(self):
-        #implement perceptron
-        #get values and implment
-        return
-    
+
+    #pass preprocessed X
+    def adaline(self, X, y_actual):
+
+        learning_rate = self.get_learning_rate()
+        threshold = self.get_threshold()
+        num_of_features = self.get_chosen_features().count()
+        include_bias = self.get_bias_state()
+
+        weights = np.ones(num_of_features)
+        bias = 0
+        errors = []
+        y_predict = []
+
+
+
+        if(include_bias):
+            while current_error > threshold:
+
+                for i in range(X.shape):
+
+                    y_predict = sum(weights * X[i]) + bias
+                    error = y_actual[i] -  y_predict
+                
+                    # update weights and bias
+                    weights = weights + learning_rate * error * X[i]
+                    bias = bias + learning_rate * error
+
+                    errors.append((error ** 2))
+                
+                current_error = np.mean(errors)
+
+        else:
+            while current_error > threshold:
+
+                for i in range(X.shape):
+                    
+                    y_predict = sum(weights * X[i]) 
+                    error = y_actual[i] -  y_predict
+                
+                    # update weights and bias
+                    weights = weights + learning_rate * error * X[i]
+                    errors.append((error ** 2))
+                
+                current_error = np.mean(errors)
+
+
         
+           
+
+
+    
+    def signum_funcation(self):
+
+        return
+
+    def split_to_train_test(self, dataset):
+        
+        selected_features = self.get_chosen_features()
+        selected_classes = self.get_chosen_classes()
+
+        filtered_data = self.get_classes(dataset, selected_classes)
+
+        # Select only the chosen features along with the class
+        X = filtered_data[selected_features]
+        y = filtered_data['category']
+
+        # Train-test split (80-20 ratio)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+        return X_train, X_test, y_train, y_test
+
+
     def show_selected(self):
         print("Selected Options", 
                         f"Features: {self.get_chosen_features()}\n"
