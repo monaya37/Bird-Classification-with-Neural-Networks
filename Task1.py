@@ -169,36 +169,37 @@ class Task1:
         if(include_bias):
 
             for e in range(epochs):
-                while current_error > threshold:
+                for i in range(X.shape[0]):
 
-                    for i in range(X.shape[0]):
+                    y_predict = sum(weights * X[i]) + bias
+                    error = y_actual[i] -  y_predict
+                
+                    # update weights and bias
+                    weights = weights + learning_rate * error * X[i]
+                    bias = bias + learning_rate * error
 
-                        y_predict = sum(weights * X[i]) + bias
-                        error = y_actual[i] -  y_predict
-                    
-                        # update weights and bias
-                        weights = weights + learning_rate * error * X[i]
-                        bias = bias + learning_rate * error
-
-                        errors.append((error ** 2))
-                    
-                    current_error = np.mean(errors)
+                    errors.append((error ** 2))
+                
+                mse = np.mean(errors)
+                if mse < threshold: #from HUI
+                    break
 
         else:
 
             for e in range(epochs):
-                while current_error > threshold:
 
-                    for i in range(X.shape[0]):
+                for i in range(X.shape[0]):
 
-                        y_predict = sum(weights * X[i]) 
-                        error = y_actual[i] -  y_predict
-                    
-                        # update weights and bias
-                        weights = weights + learning_rate * error * X[i]
-                        errors.append((error ** 2))
-                    
-                    current_error = np.mean(errors)
+                    y_predict = sum(weights * X[i]) 
+                    error = y_actual[i] -  y_predict
+                
+                    # update weights and bias
+                    weights = weights + learning_rate * error * X[i]
+                    errors.append((error ** 2))
+                
+                mse = np.mean(errors)
+                if mse < threshold: #from HUI
+                    break
 
 
     def signum_funcation(self):
