@@ -136,7 +136,11 @@ class Task1:
 
         if(algorithm_type == "Algorithm1"):
             #TO-DO:
-            self.perceptron()
+            weights, bias = self.perceptron(X_train, y_train)
+            y_pred = self.predict(X_test, weights, bias)
+            self.plot_function(X_train, y_train, weights, bias)
+
+
         else:
             weights, bias = self.adaline(X_train, y_train)
             #y_pred = self.predict(X_test, weights, bias)
@@ -223,10 +227,60 @@ class Task1:
         return y_train, y_test
 
 
-    def perceptron(self):
-        #implement perceptron
-        #get values and implment
-        return
+    def perceptron(self, X, y_actual):
+        
+        X = X.values
+        y_actual = np.array(y_actual, dtype=float)
+
+        epochs = int(self.get_epochs())
+        learning_rate = float(self.get_learning_rate())
+        include_bias = self.get_bias_state()
+
+        weights = np.random.randn(X.shape[1])
+        bias = np.random.randn(1) / 2
+        y_predict = []
+        counter = 0
+
+        if(include_bias):
+
+            for e in range(epochs):
+                counter = 0
+                for i in range(X.shape[0]):
+                    
+                    y_predict = sum(weights * X[i]) + bias
+                    prediction = self.signum(y_predict)
+                    if(y_actual[i] != prediction):
+                        # update weights and bias
+                        counter = 0
+                        weights = weights + learning_rate * X[i]
+                        bias = bias + learning_rate 
+                    else:
+                        counter += 1
+
+                if(counter == X.shape[0]):
+                    break              
+  
+        else:
+
+            for e in range(epochs):
+                counter = 0
+                for i in range(X.shape[0]):
+
+                    y_predict = sum(weights * X[i]) 
+                    prediction = self.signum(y_predict)
+                    error = y_actual[i] -  prediction
+                
+                    if(y_actual[i] != prediction):
+                        counter = 0
+                        weights = weights + learning_rate * X[i]  
+                    else:
+                        counter += 1
+
+                if(counter == (X.shape[0])):
+                    break              
+
+        return weights, bias
+        
     
 
     def adaline(self, X, y_actual):
@@ -282,7 +336,7 @@ class Task1:
         return weights, bias
 
 
-    def signum_funcation(self, x):
+    def signum(self, x):
         if(x > 0):
             return 1
         if(x < 0):
@@ -318,31 +372,9 @@ class Task1:
         X = filtered_data[selected_features]
         y = filtered_data['bird category']
 
-        class_A = filtered_data['bird category'] == 'A'
-        class_B = filtered_data['bird category'] == 'B'
-        class_C = filtered_data['bird category'] == 'C'
 
-        # train test split before handling outliers
-        X_a = class_A.drop(columns=['bird category'])
-        y_a = class_A['bird category']
-        X_train_a, X_test_a, y_train_a, y_test_a = (train_test_split(X_a, y_a, test_size=0.2, shuffle=True, random_state=0))
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=True, random_state=0)
 
-        X_b = class_B.drop(columns=['bird category'])
-        y_b = class_B['bird category']
-        X_train_b, X_test_b, y_train_b, y_test_b = train_test_split(X_b, y_b, test_size=0.2, shuffle=True, random_state=0)
-
-        X_c = class_C.drop(columns=['bird category'])
-        y_c = class_C['bird category']
-        X_train_c, X_test_c, y_train_c, y_test_c = train_test_split(X_c, y_c, test_size=0.2, shuffle=True, random_state=0)
-
-
-        # Merge training sets
-        X_train = pd.concat([X_train_a, X_train_b, X_train_c], ignore_index=True)
-        y_train = pd.concat([y_train_a, y_train_b, y_train_c], ignore_index=True)
-
-        # Merge test sets
-        X_test = pd.concat([X_test_a, X_test_b, X_test_c], ignore_index=True)
-        y_test = pd.concat([y_test_a, y_test_b, y_test_c], ignore_index=True)
 
         return X_train, X_test, y_train, y_test
 
@@ -353,7 +385,6 @@ class Task1:
         features = self.get_chosen_features()
 
         X = X.values
-       
 
         # Plot the data points    
         plt.scatter(X[Y == 0, 0], X[Y == 0, 1], color='red', label='Class 0')
@@ -370,7 +401,6 @@ class Task1:
 
         # Plot the decision boundary line
         plt.plot(x1, x2, color='green', label='Decision Boundary')
-
         plt.xlabel(features[0])
         plt.ylabel(features[1])
         plt.legend()
