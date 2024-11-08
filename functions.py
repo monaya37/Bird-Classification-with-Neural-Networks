@@ -9,7 +9,7 @@ from random import shuffle
 from sklearn.utils import shuffle
 import seaborn as sns
 
-#Getters
+# Getters
 class functions:
 
     def __init__(self, gui):
@@ -22,9 +22,10 @@ class functions:
         self.selected_classes = None
         self.include_bias = None
         self.algorithm_type = None
+        self.activation_function = None
         self.dataset = None
 
-    #Getters
+    # Getters
     def get_epochs(self):
         return self.gui.epochs_entry.get()
 
@@ -46,8 +47,7 @@ class functions:
     def get_algorithm_type(self):
         return self.gui.algorithm_var.get()
 
-    
-    #Functions
+    # Functions
     def run_algorithm(self):
 
         self.dataset = self.read_file('birds.csv')
@@ -59,33 +59,29 @@ class functions:
         self.include_bias = self.get_bias_state()
         self.algorithm_type = self.get_algorithm_type()
 
-        # Read dataset and split it based on chosen features and classes
+        if(self.algorithm_type == 'Perceptron'):
+            self.activation_function = self.signum
+            min = -1
+            max = 1
+        else:
+            self.activation_function = self.linear
+            min = 0
+            max = 1
+
+        # split based on selected
         X_train, X_test, y_train, y_test = self.split_to_train_test(self.dataset)
 
         # Preprocess
         X_train, X_test = self.preprocess_features(X_train, X_test, self.selected_features)
         y_train, y_test = self.preprocess_target(y_train, y_test)
 
-        # Determine which algorithm to run
-        if self.algorithm_type == "Algorithm1":  # Perceptron
-            weights, bias = self.train_model(X_train, y_train)
-            y_pred = self.predict(X_test, weights, bias)
-            prediction = np.array(self.signum(y_pred))  # Apply signum to make predictions discrete
-            print(prediction)
-            # Evaluate the performance of the model using confusion matrix and accuracy
-            self.evaluate_predictions(y_test, prediction, -1, 1)  # Evaluate on y_test
-            self.plot_function(X_train, y_train, weights, bias)
+        weights, bias = self.train_model(X_train, y_train)
+        y_pred = self.predict(X_test, weights, bias)
+        print(y_pred)
 
-        else:  # Adaline
-            weights, bias = self.train_model(X_train, y_train)
-            y_pred = self.predict(X_test, weights, bias)
-            prediction = np.array(self.linear(y_pred))
-            # Apply threshold element-wise to each prediction
-            y_predict_class = (prediction >= 0).astype(float)
-            print(y_predict_class)
-            # Evaluate the performance of the model using confusion matrix and accuracy
-            self.evaluate_predictions(y_test, y_predict_class, 0, 1)  #Evaluate on y_test
-            self.plot_function(X_train, y_train, weights, bias)
+        # Evaluate the performance
+        self.evaluate_predictions(y_test, y_pred, min, max) 
+        self.plot_function(X_train, y_train, weights, bias)
 
 
     def read_file(self, path):
@@ -96,16 +92,15 @@ class functions:
     def preprocess_features(self, X_train, X_test, selected_features):
 
         # Fill na
-        if 'gender' in X_train.columns:
-            gender_mode = X_train['gender'].mode()[0]
-            X_train['gender'].fillna(gender_mode, inplace=True)
-            X_test['gender'].fillna(gender_mode, inplace=True)
+        if "gender" in X_train.columns:
+            gender_mode = X_train["gender"].mode()[0]
+            X_train["gender"].fillna(gender_mode, inplace=True)
+            X_test["gender"].fillna(gender_mode, inplace=True)
 
-        # Handle outliers 
-        numeric_cols = ['body_mass', 'beak_length', 'beak_depth', 'fin_length']
+        # Handle outliers
+        numeric_cols = ["body_mass", "beak_length", "beak_depth", "fin_length"]
         numeric_cols = list(set(numeric_cols) & set(selected_features))
 
-        # Calculate IQR 
         lower_bounds = {}
         upper_bounds = {}
 
@@ -118,30 +113,38 @@ class functions:
 
             # Replace outliers with median
             median = X_train[col].median()
-            X_train[col] = X_train[col].apply(lambda x: x if lower_bounds[col] <= x <= upper_bounds[col] else median)
-        
+            X_train[col] = X_train[col].apply(
+                lambda x: x if lower_bounds[col] <= x <= upper_bounds[col] else median
+            )
+
         # handle outliears (X_test)
         for col in numeric_cols:
             X_test[col] = X_test[col].apply(
-                lambda x: x if lower_bounds[col] <= x <= upper_bounds[col] else X_train[col].median())
+                lambda x: (
+                    x
+                    if lower_bounds[col] <= x <= upper_bounds[col]
+                    else X_train[col].median()
+                )
+            )
 
-        # Encode categoricals    
+        # Encode categoricals
         le = LabelEncoder()
-        for i in X_train.columns: 
-            if (X_train[i].dtype == "O"):  # if the column is categorical
-                le.fit(X_train[i])  
-                X_train[i] = le.transform(X_train[i]) 
-                X_test[i] = le.transform(X_test[i])  
+        for i in X_train.columns:
+            if X_train[i].dtype == "O":  # if the column is categorical
+                le.fit(X_train[i])
+                X_train[i] = le.transform(X_train[i])
+                X_test[i] = le.transform(X_test[i])
+
 
         # Scale data
         scaler = StandardScaler()
-        col_names= X_train.columns
+        col_names = X_train.columns
         scaler.fit(X_train[col_names])
         X_train[col_names] = scaler.transform(X_train[col_names])
         X_test[col_names] = scaler.transform(X_test[col_names])
-            
+
         return X_train, X_test
-    
+
 
     def preprocess_target(self, y_train, y_test):
 
@@ -150,7 +153,7 @@ class functions:
             le.fit(y_train)  
             y_train = le.transform(y_train)  
             y_test = le.transform(y_test) 
-    
+
         return y_train, y_test
 
 
@@ -166,44 +169,45 @@ class functions:
         counter = 0
         errors = []
 
-        if(self.algorithm_type == "Algorithm1"):
-            
-            activation_function = self.signum
+        if self.algorithm_type == "Perceptron":
+
             for e in range(self.epochs):
-                
-                    counter = 0
-                    error = -100
-                    for i in range(n):
 
-                        if (error != 0):
-                            counter = 0
-                            weights, bias, error = self.update_weights_and_bias(weights, bias, X_train[i], y_train[i], activation_function)
-                        else:
-                            counter += 1
+                counter = 0
+                error = -100
+                for i in range(n):
 
-                    if (counter == n):
-                        break
+                    if error != 0:
+                        counter = 0
+                        weights, bias, error = self.update_weights_and_bias(
+                            weights, bias, X_train[i], y_train[i]
+                        )
+                    else:
+                        counter += 1
+
+                if counter == n:
+                    break
 
         else:
-            activation_function = self.linear
             for e in range(self.epochs):
-                #should we reset the error array here?
+                # should we reset the error array here?
                 for i in range(n):
-                    weights, bias, error = self.update_weights_and_bias(weights, bias, X_train[i], y_train[i], activation_function)
-                    errors.append((error ** 2))
+                    weights, bias, error = self.update_weights_and_bias(
+                        weights, bias, X_train[i], y_train[i]
+                    )
+                    errors.append((error**2))
 
                 mse = np.mean(errors)
-                if mse < self.threshold: 
+                if mse < self.threshold:
                     break
 
         return weights, bias
 
 
-    
-    def update_weights_and_bias(self, weights, bias, X, y, activation_function):
-        
+    def update_weights_and_bias(self, weights, bias, X, y):
+
         y_predict = sum(weights * X) + bias
-        y_predict = activation_function(y_predict)
+        y_predict = self.activation_function(y_predict)
         error = y -  y_predict
 
         if self.include_bias:
@@ -213,12 +217,12 @@ class functions:
             weights = weights + self.learning_rate * error * X
 
         return weights, bias, error
-    
 
 
     def signum(self, x):
         return np.where(x >= 0, 1, -1) 
-    
+
+
     def linear(self, x):
         return x 
 
@@ -231,14 +235,22 @@ class functions:
         if(self.include_bias):
             for i in range(X_test.shape[0]):
                 y_predict = np.dot(weights, X_test[i]) + bias
+                y_predict = self.activation_function(y_predict)
                 predictions.append(y_predict)
         else:
             for i in range(X_test.shape[0]):
                 y_predict = np.dot(weights, X_test[i])
+                y_predict = self.activation_function(y_predict)
                 predictions.append(y_predict)
 
-        return np.array(predictions)
-    
+        predictions = np.array(predictions)
+
+        if(self.algorithm_type == 'Adaline'):
+            predictions = (predictions >= 0).astype(float)
+
+        return predictions
+
+
     def evaluate_predictions(self, y_true, y_pred, min, max):
         TP = sum((y_true == max) & (y_pred == max))
         TN = sum((y_true == min) & (y_pred == min))
@@ -287,8 +299,8 @@ class functions:
         X = X.values
 
         self.gui.ax.clear()
-        self.gui.ax.scatter(X[Y == 0, 0], X[Y == 0, 1], color='red', label='Class 0')
-        self.gui.ax.scatter(X[Y == 1, 0], X[Y == 1, 1], color='blue', label='Class 1')
+        self.gui.ax.scatter(X[Y == 0, 0], X[Y == 0, 1], color='red', label=self.selected_classes[0])
+        self.gui.ax.scatter(X[Y == 1, 0], X[Y == 1, 1], color='blue', label=self.selected_classes[1])
 
         x1 = np.linspace(min(X[:, 0]), max(X[:, 0]), 100)
 
@@ -307,7 +319,8 @@ class functions:
         self.gui.canvas.draw()
 
 
-    # check w salma
+    # check w salma 
+
     # def evaluate_predictions_perceptron(self, y_true, y_pred):
     #     TP = sum((y_true == 1) & (y_pred == 1))
     #     TN = sum((y_true == -1) & (y_pred == -1))
@@ -323,8 +336,6 @@ class functions:
 
     #     print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
     #     print(f"Accuracy: {accuracy}")
-
-
 
     # def evaluate_predictions_adaline(self, y_true, y_pred):
     #     TP = sum((y_true == 1) & (y_pred == 1))

@@ -1,0 +1,4 @@
+- check if models work correctly
+- accuracy array has some nan values (in percepron)
+- plot confusion matrix
+- check شكل output el confusion matrix w salma

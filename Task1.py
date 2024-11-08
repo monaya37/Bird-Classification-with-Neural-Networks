@@ -96,8 +96,8 @@ class Task1:
         self.label_algorithm = tk.Label(self.algorithms_frame, text="Algorithm Type:", font=large_font)
         self.label_algorithm.pack(anchor='w')
 
-        self.radio_algorithm1 = tk.Radiobutton(self.algorithms_frame, text="Perceptron", variable=self.algorithm_var, value="Algorithm1", font=large_font)
-        self.radio_algorithm2 = tk.Radiobutton(self.algorithms_frame, text="Adaline", variable=self.algorithm_var, value="Algorithm2", font=large_font)
+        self.radio_algorithm1 = tk.Radiobutton(self.algorithms_frame, text="Perceptron", variable=self.algorithm_var, value="Perceptron", font=large_font)
+        self.radio_algorithm2 = tk.Radiobutton(self.algorithms_frame, text="Adaline", variable=self.algorithm_var, value="Adaline", font=large_font)
         self.radio_algorithm1.pack(anchor='w')
         self.radio_algorithm2.pack(anchor='w')
 
