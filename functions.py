@@ -15,6 +15,16 @@ class functions:
     def __init__(self, gui):
         self.gui = gui
 
+        self.epochs = None
+        self.learning_rate = None
+        self.threshold = None
+        self.selected_features = None
+        self.selected_classes = None
+        self.include_bias = None
+        self.algorithm_type = None
+        self.dataset = None
+
+    #Getters
     def get_epochs(self):
         return self.gui.epochs_entry.get()
 
@@ -39,6 +49,15 @@ class functions:
     
     #Functions
     def run_algorithm(self):
+
+        self.epochs = int(self.get_epochs())
+        self.learning_rate = float(self.get_learning_rate())
+        self.threshold = float(self.get_threshold())
+        self.selected_features = self.get_chosen_features()
+        self.selected_classes = self.get_chosen_classes()
+        self.include_bias = self.get_bias_state()
+        self.algorithm_type = self.get_algorithm_type()
+
         # Read dataset and split it based on chosen features and classes
         X_train, X_test, y_train, y_test = self.split_to_train_test(self.read_file('birds.csv'))
 
@@ -47,8 +66,7 @@ class functions:
         y_train, y_test = self.preprocess_y(y_train, y_test)
 
         # Determine which algorithm to run
-        algorithm_type = self.get_algorithm_type()
-        if algorithm_type == "Algorithm1":  # Perceptron
+        if self.algorithm_type == "Algorithm1":  # Perceptron
             weights, bias = self.perceptron(X_train, y_train)
             y_pred = self.predict(X_test, weights, bias)
             prediction = np.array(self.signum(y_pred))  # Apply signum to make predictions discrete
@@ -71,7 +89,6 @@ class functions:
 
     def read_file(self, path):
         dataset = pd.read_csv(path)
-        #print(dataset.head())
         return dataset
 
 
@@ -125,45 +142,38 @@ class functions:
                 X_test[i] = le.transform(X_test[i])  # transform the test data
 
         # A--> 0, B--> 1, C-->2       (el encoding)
-        # Normalize the numerical features
         scaler = StandardScaler()
-        # Select the features to scale
         col_names= X_train.columns
-        # Fit the scaler on the training data (ONLY on X_train)
         scaler.fit(X_train[col_names])
-        # Transform the training and test data using the fitted scaler
         X_train[col_names] = scaler.transform(X_train[col_names])
         X_test[col_names] = scaler.transform(X_test[col_names])
             
         return X_train, X_test
     
     def preprocess_y(self, y_train, y_test):
-         # Create a LabelEncoder object
+
         le = LabelEncoder()
         if (y_train.dtype == "O"):  # if the column is categorical
-            le.fit(y_train)  # fit on the training data
-            y_train = le.transform(y_train)  # transform the training data
-            y_test = le.transform(y_test)  # transform the test data
+            le.fit(y_train)  
+            y_train = le.transform(y_train)  
+            y_test = le.transform(y_test) 
     
         return y_train, y_test
 
     def perceptron(self, X, y_actual):
-        #implement perceptron
+
         X = X.values
         y_actual = np.array(y_actual, dtype=float)
 
-        epochs = int(self.get_epochs())
-        learning_rate = float(self.get_learning_rate())
-        include_bias = self.get_bias_state()
 
         weights = np.random.randn(X.shape[1])
         bias = np.random.randn(1) / 2
         y_predict = []
         counter = 0
 
-        if (include_bias):
+        if (self.include_bias):
 
-            for e in range(epochs):
+            for e in range(self.epochs):
                 counter = 0
                 for i in range(X.shape[0]):
                     y_predict = sum(weights * X[i]) + bias
@@ -171,8 +181,8 @@ class functions:
                     if (y_actual[i] != prediction):
                         # update weights and bias
                         counter = 0
-                        weights = weights + learning_rate * X[i]
-                        bias = bias + learning_rate
+                        weights = weights + self.learning_rate * X[i]
+                        bias = bias + self.learning_rate
                     else:
                         counter += 1
 
@@ -181,7 +191,7 @@ class functions:
 
         else:
 
-            for e in range(epochs):
+            for e in range(self.epochs):
                 counter = 0
                 for i in range(X.shape[0]):
                     y_predict = sum(weights * X[i])
@@ -190,7 +200,7 @@ class functions:
 
                     if (y_actual[i] != prediction):
                         counter = 0
-                        weights = weights + learning_rate * X[i]
+                        weights = weights + self.learning_rate * X[i]
                     else:
                         counter += 1
 
@@ -203,11 +213,8 @@ class functions:
         y_actual = np.array(y_actual, dtype=float)
         X = X.values
 
-        epochs = int(self.get_epochs())
-        learning_rate = float(self.get_learning_rate())
-        threshold = float(self.get_threshold())
+
         num_of_features = len(self.get_chosen_features())
-        include_bias = self.get_bias_state()
 
         weights = np.random.randn(num_of_features)
         bias = np.random.randn(1) / 2
@@ -216,34 +223,34 @@ class functions:
 
         print("x type is: ", type(X))
 
-        if(include_bias):
-            for e in range(epochs):
+        if(self.include_bias):
+            for e in range(self.epochs):
                 for i in range(X.shape[0]):
                     y_predict = sum(weights * X[i]) + bias
                     error = y_actual[i] -  y_predict
 
                     # update weights and bias
-                    weights = weights + learning_rate * error * X[i]
-                    bias = bias + learning_rate * error
+                    weights = weights + self.learning_rate * error * X[i]
+                    bias = bias + self.learning_rate * error
 
                     errors.append((error ** 2))
 
                 mse = np.mean(errors)
-                if mse < threshold: #from GUI
+                if mse < self.threshold: #from GUI
                     break
 
         else:
-            for e in range(epochs):
+            for e in range(self.epochs):
                 for i in range(X.shape[0]):
                     y_predict = sum(weights * X[i])
                     error = y_actual[i] -  y_predict
 
                     # update weights and bias
-                    weights = weights + learning_rate * error * X[i]
+                    weights = weights + self.learning_rate * error * X[i]
                     errors.append((error ** 2))
 
                 mse = np.mean(errors)
-                if mse < threshold: #from GUI
+                if mse < self.threshold: #from GUI
                     break
 
         return weights, bias
@@ -253,11 +260,10 @@ class functions:
 
     def predict(self, X_test, weights, bias):
 
-        include_bias = self.get_bias_state()
         predictions = []
         X_test = X_test.values
 
-        if(include_bias):
+        if(self.include_bias):
             for i in range(X_test.shape[0]):
                 y_predict = np.dot(weights, X_test[i]) + bias
                 predictions.append(y_predict)
@@ -301,33 +307,17 @@ class functions:
 
         print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
         print(f"Accuracy: {accuracy}")
-        self.plot_confusion(TP, TN, FP, FN, accuracy)
 
-    def plot_confusion(self, TP, TN, FP, FN, accuracy):
 
-        self.gui.ax2.clear()
 
-        cm = np.array([[TN, FP], [FN, TP]])
-
-        plt.figure(figsize=(6, 5))
-        sns.heatmap(cm, annot=True, fmt='g', cmap='Blues', cbar=False,
-                    xticklabels=['Predicted 0', 'Predicted 1'], 
-                    yticklabels=['Actual 0', 'Actual 1'])
-        
-        plt.title(f"Confusion Matrix\nAccuracy: {accuracy:.2f}")
-        self.gui.ax2.set_xlabel('Predicted')
-        self.gui.ax2.set_ylabel('Actual')
-        self.gui.ax2.legend()
-        self.gui.canvas2.draw()
 
     def split_to_train_test(self, dataset):
-        selected_features = self.get_chosen_features()
-        selected_classes = self.get_chosen_classes()
+
 
         # Split each class data into 30 samples for training and 20 for testing
         train_data = []
         test_data = []
-        for cls in selected_classes:
+        for cls in self.selected_classes:
             class_data = dataset[dataset['bird category'] == cls]
             class_data = shuffle(class_data, random_state =0)  # Shuffle data within each class
             print(cls)
@@ -341,17 +331,14 @@ class functions:
         test_data = pd.concat(test_data)
 
         # Separate features and labels
-        X_train = train_data[selected_features]
+        X_train = train_data[self.selected_features]
         y_train = train_data['bird category']
-        X_test = test_data[selected_features]
+        X_test = test_data[self.selected_features]
         y_test = test_data['bird category']
 
         return X_train, X_test, y_train, y_test
 
     def plot_function(self, X, Y, weights, bias):
-
-        include_bias = self.get_bias_state()
-        features = self.get_chosen_features()
 
         X = X.values
        
@@ -362,7 +349,7 @@ class functions:
 
         x1 = np.linspace(min(X[:, 0]), max(X[:, 0]), 100)
 
-        if(include_bias):
+        if(self.include_bias):
             # Generate points for the decision boundary line
             x2 = -(weights[0] * x1 + bias) / weights[1]
         else:
@@ -372,8 +359,8 @@ class functions:
         # Plot the decision boundary line
         self.gui.ax.plot(x1, x2, color='green', label='Decision Boundary')
 
-        self.gui.ax.set_xlabel(features[0])
-        self.gui.ax.set_ylabel(features[1])
+        self.gui.ax.set_xlabel(self.selected_features[0])
+        self.gui.ax.set_ylabel(self.selected_features[1])
         self.gui.ax.legend()
         self.gui.canvas.draw()
 

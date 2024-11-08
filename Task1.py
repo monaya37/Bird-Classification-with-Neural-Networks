@@ -28,11 +28,6 @@ class Task1:
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
         self.canvas.get_tk_widget().grid(row=4, column=0, columnspan=4) 
 
-        # Figure and canvas for plotting
-        self.fig2, self.ax2 = plt.subplots()
-        self.canvas2 = FigureCanvasTkAgg(self.fig, master=self.frame)
-        self.canvas2.get_tk_widget().grid(row=5, column=0, columnspan=4, pady =(5))  
-
         # Frame for Features
         self.features_frame = tk.Frame(self.frame)
         self.features_frame.grid(row=0, column=0, padx=20)
