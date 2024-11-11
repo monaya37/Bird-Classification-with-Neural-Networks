@@ -1,3 +1,4 @@
+- why is line not seperating well?
 - check if models work correctly
 - accuracy array has some nan values (in percepron) (done)
 - plot confusion matrix (done)

@@ -8,7 +8,7 @@ from random import shuffle
 from sklearn.utils import shuffle
 import seaborn as sns
 
-# Getters
+# task1 functions
 class functions:
 
     def __init__(self, gui):
@@ -309,11 +309,9 @@ class functions:
 
         x1 = np.linspace(min(X[:, 0]), max(X[:, 0]), 100)
 
-        # if(self.include_bias):
-            # Generate points for the decision boundary line
+        # bias = 0, if the box is unchecked
         x2 = -(weights[0] * x1 + bias) / weights[1]
-        # else:
-        #     x2 = -(weights[0] * x1)
+
 
         # Plot the decision boundary line
         self.gui.ax1.plot(x1, x2, color='green', label='Decision Boundary')

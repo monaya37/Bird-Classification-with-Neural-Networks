@@ -5,7 +5,7 @@ from functions  import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
+#task1 gui components
 class Task1:
     def __init__(self, parent):
         self.parent = parent
