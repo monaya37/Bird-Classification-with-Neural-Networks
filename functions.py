@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder    
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
@@ -50,6 +49,7 @@ class functions:
     # Functions
     def run_algorithm(self):
 
+        #initilize global variables
         self.dataset = self.read_file('birds.csv')
         self.epochs = int(self.get_epochs())
         self.learning_rate = float(self.get_learning_rate())
@@ -68,19 +68,22 @@ class functions:
             min = 0
             max = 1
 
-        # split based on selected
+        # Split based on selected
         X_train, X_test, y_train, y_test = self.split_to_train_test(self.dataset)
 
         # Preprocess
         X_train, X_test = self.preprocess_features(X_train, X_test, self.selected_features)
         y_train, y_test = self.preprocess_target(y_train, y_test)
 
+        # Train model
         weights, bias = self.train_model(X_train, y_train)
         y_pred = self.predict(X_test, weights, bias)
         print(y_pred)
 
         # Evaluate the performance
-        self.evaluate_predictions(y_test, y_pred, min, max) 
+        TP , TN, FP, FN = self.evaluate_predictions(y_test, y_pred, min, max) 
+        self.plot_confusion_matrix(TP, TN, FP, FN)
+
         self.plot_function(X_train, y_train, weights, bias)
 
 
@@ -164,19 +167,15 @@ class functions:
         y_train = np.array(y_train, dtype=float)
 
         weights = np.random.randn(X_train.shape[1])
-        bias = np.random.randn(1) / 2
+        bias = 0
 
-        counter = 0
-        errors = []
-
-        if self.algorithm_type == "Perceptron":
-
-            for e in range(self.epochs):
-
-                counter = 0
+        
+        if self.algorithm_type == "Perceptron":            
+            for _ in range(self.epochs):
                 error = -100
-                for i in range(n):
+                counter = 0
 
+                for i in range(n):
                     if error != 0:
                         counter = 0
                         weights, bias, error = self.update_weights_and_bias(
@@ -189,8 +188,9 @@ class functions:
                     break
 
         else:
-            for e in range(self.epochs):
-                # should we reset the error array here?
+            errors = []
+            for _ in range(self.epochs):
+                # should we reset the error array here instead?
                 for i in range(n):
                     weights, bias, error = self.update_weights_and_bias(
                         weights, bias, X_train[i], y_train[i]
@@ -220,11 +220,14 @@ class functions:
 
 
     def signum(self, x):
-        return np.where(x >= 0, 1, -1) 
+        if(x<0):
+           return float(-1)
+        else:
+           return float(1)
 
 
     def linear(self, x):
-        return x 
+        return float(x) 
 
 
     def predict(self, X_test, weights, bias):
@@ -246,7 +249,7 @@ class functions:
         predictions = np.array(predictions)
 
         if(self.algorithm_type == 'Adaline'):
-            predictions = (predictions >= 0).astype(float)
+            predictions = (predictions >= 0).astype(int)
 
         return predictions
 
@@ -267,6 +270,8 @@ class functions:
         print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
         print(f"Accuracy: {accuracy}")
 
+        return TP, TN, FP, FN 
+
 
     def split_to_train_test(self, dataset):
 
@@ -277,7 +282,7 @@ class functions:
 
             class_data = dataset[dataset['bird category'] == cls]
             class_data = shuffle(class_data, random_state =0)  # Shuffle data within each class
-            print(cls)
+            #print(cls)
 
             # Select 30 samples for training and 20 for testing
             train_data.append(class_data.iloc[:30])
@@ -298,24 +303,41 @@ class functions:
 
         X = X.values
 
-        self.gui.ax.clear()
-        self.gui.ax.scatter(X[Y == 0, 0], X[Y == 0, 1], color='red', label=self.selected_classes[0])
-        self.gui.ax.scatter(X[Y == 1, 0], X[Y == 1, 1], color='blue', label=self.selected_classes[1])
+        self.gui.ax1.clear()
+        self.gui.ax1.scatter(X[Y == 0, 0], X[Y == 0, 1], color='red', label=self.selected_classes[0])
+        self.gui.ax1.scatter(X[Y == 1, 0], X[Y == 1, 1], color='blue', label=self.selected_classes[1])
 
         x1 = np.linspace(min(X[:, 0]), max(X[:, 0]), 100)
 
-        if(self.include_bias):
+        # if(self.include_bias):
             # Generate points for the decision boundary line
-            x2 = -(weights[0] * x1 + bias) / weights[1]
-        else:
-            x2 = -(weights[0] * x1)
+        x2 = -(weights[0] * x1 + bias) / weights[1]
+        # else:
+        #     x2 = -(weights[0] * x1)
 
         # Plot the decision boundary line
-        self.gui.ax.plot(x1, x2, color='green', label='Decision Boundary')
+        self.gui.ax1.plot(x1, x2, color='green', label='Decision Boundary')
 
-        self.gui.ax.set_xlabel(self.selected_features[0])
-        self.gui.ax.set_ylabel(self.selected_features[1])
-        self.gui.ax.legend()
+        self.gui.ax1.set_xlabel(self.selected_features[0])
+        self.gui.ax1.set_ylabel(self.selected_features[1])
+        self.gui.ax1.legend()
+        self.gui.canvas.draw()
+
+
+    def plot_confusion_matrix(self, TP, TN, FP, FN):
+
+        confusion_matrix = np.array([[TP, FN], [FP, TN]])
+
+        self.gui.ax2.clear()
+        sns.heatmap(confusion_matrix, annot=True, fmt="d", cmap= "magma", 
+                    xticklabels=["Predicted Positive", "Predicted Negative"],
+                    yticklabels=["Actual Positive", "Actual Negative"], ax=self.gui.ax2, cbar=False)
+        
+        # Set titles and labels
+        self.gui.ax2.set_title("Confusion Matrix")
+        self.gui.ax2.set_xlabel("Predicted Class")
+        self.gui.ax2.set_ylabel("Actual Class")
+
         self.gui.canvas.draw()
 
 

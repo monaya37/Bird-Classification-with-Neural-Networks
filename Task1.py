@@ -5,18 +5,12 @@ from functions  import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-import tkinter as tk
-from tkinter import ttk, messagebox
-from functions import *
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class Task1:
     def __init__(self, parent):
         self.parent = parent
         self.functions_instance = functions(self)
 
-        # Define larger font for the GUI components (Arial font)
         large_font = ('Helvetica', 12)  # Change the font to Arial
 
         # Create main frame
@@ -24,9 +18,10 @@ class Task1:
         self.frame.grid(padx=10, pady=10)
 
         # Figure and canvas for plotting
-        self.fig, self.ax = plt.subplots()
+        self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(10, 5))
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
-        self.canvas.get_tk_widget().grid(row=4, column=0, columnspan=4) 
+        self.canvas.get_tk_widget().grid(row=4, column=0, columnspan=4)
+
 
         # Frame for Features
         self.features_frame = tk.Frame(self.frame)
@@ -68,22 +63,25 @@ class Task1:
         self.label_epochs = tk.Label(self.textboxes_frame, text="Epochs:", font=large_font)
         self.label_epochs.pack(anchor='w')
         self.epochs_entry = tk.Entry(self.textboxes_frame, font=large_font)
+        self.epochs_entry.insert(0, "100")  #Default 100
         self.epochs_entry.pack(anchor='w')
 
         # Learning Rate
         self.label_learning_rate = tk.Label(self.textboxes_frame, text="Learning Rate:", font=large_font)
         self.label_learning_rate.pack(anchor='w')
         self.learning_rate_entry = tk.Entry(self.textboxes_frame, font=large_font)
+        self.learning_rate_entry.insert(0, "0.01")
         self.learning_rate_entry.pack(anchor='w')
 
         # Threshold
         self.label_threshold = tk.Label(self.textboxes_frame, text="Threshold:", font=large_font)
         self.label_threshold.pack(anchor='w')
         self.threshold_entry = tk.Entry(self.textboxes_frame, font=large_font)
+        self.threshold_entry.insert(0, "0.01")
         self.threshold_entry.pack(anchor='w')
 
         # Bias Checkbox
-        self.bias_var = tk.IntVar()
+        self.bias_var = tk.IntVar(value=1)
         self.bias_checkbox = tk.Checkbutton(self.textboxes_frame, text="Include Bias", variable=self.bias_var, font=large_font)
         self.bias_checkbox.pack(anchor='w', pady=(10, 10))
 
@@ -92,7 +90,7 @@ class Task1:
         self.algorithms_frame.grid(row=0, column=3, padx=20)
 
         # Algorithm Type Radio Buttons
-        self.algorithm_var = tk.StringVar(value="Algorithm1")
+        self.algorithm_var = tk.StringVar(value="Perceptron")
         self.label_algorithm = tk.Label(self.algorithms_frame, text="Algorithm Type:", font=large_font)
         self.label_algorithm.pack(anchor='w')
 
