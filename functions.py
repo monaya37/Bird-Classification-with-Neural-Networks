@@ -220,10 +220,7 @@ class functions:
 
 
     def signum(self, x):
-        if(x<0):
-           return float(-1)
-        else:
-           return float(1)
+           return np.where(x >= 0, 1, -1) 
 
 
     def linear(self, x):
