@@ -263,9 +263,10 @@ class functions:
             accuracy = 0
         else:
             accuracy = (TP + TN) / (TP + TN + FP + FN)
+            accuracy *= 100
 
         print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
-        print(f"Accuracy: {accuracy}")
+        print(f"Accuracy: {accuracy}%")
 
         return TP, TN, FP, FN 
 
