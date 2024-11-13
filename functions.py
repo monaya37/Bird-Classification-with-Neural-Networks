@@ -78,7 +78,8 @@ class functions:
         # Train model
         weights, bias = self.train_model(X_train, y_train)
         y_pred = self.predict(X_test, weights, bias)
-        print(y_pred)
+        print("y predcted: ", y_pred)
+        print("y actual: ", y_test)
 
         # Evaluate the performance
         TP , TN, FP, FN = self.evaluate_predictions(y_test, y_pred, min, max) 
@@ -164,22 +165,25 @@ class functions:
 
         n = X_train.shape[0]
         X_train = X_train.values
-        y_train = np.array(y_train, dtype=float)
 
+        y_train = np.array(y_train, dtype=float)
         weights = np.random.randn(X_train.shape[1])
+
         bias = 0
 
         
         if self.algorithm_type == "Perceptron":            
             for _ in range(self.epochs):
-                error = -100
                 counter = 0
 
                 for i in range(n):
+                    y_predict = sum(weights * X_train[i]) + bias
+                    y_predict = self.activation_function(y_predict)
+                    error = y_train[i] -  y_predict
                     if error != 0:
                         counter = 0
-                        weights, bias, error = self.update_weights_and_bias(
-                            weights, bias, X_train[i], y_train[i]
+                        weights, bias = self.update_weights_and_bias(
+                            weights, bias, X_train[i], error
                         )
                     else:
                         counter += 1
@@ -188,13 +192,21 @@ class functions:
                     break
 
         else:
-            errors = []
+
             for _ in range(self.epochs):
-                # should we reset the error array here instead?
+                
+                errors = []
+
                 for i in range(n):
-                    weights, bias, error = self.update_weights_and_bias(
-                        weights, bias, X_train[i], y_train[i]
+
+                    y_predict = sum(weights * X_train[i]) + bias
+                    y_predict = self.activation_function(y_predict)
+                    error = y_train[i] -  y_predict
+
+                    weights, bias = self.update_weights_and_bias(
+                        weights, bias, X_train[i], error
                     )
+
                     errors.append((error**2))
 
                 mse = np.mean(errors)
@@ -204,11 +216,7 @@ class functions:
         return weights, bias
 
 
-    def update_weights_and_bias(self, weights, bias, X, y):
-
-        y_predict = sum(weights * X) + bias
-        y_predict = self.activation_function(y_predict)
-        error = y -  y_predict
+    def update_weights_and_bias(self, weights, bias, X, error):
 
         if self.include_bias:
             weights = weights + self.learning_rate * error * X
@@ -216,7 +224,7 @@ class functions:
         else:
             weights = weights + self.learning_rate * error * X
 
-        return weights, bias, error
+        return weights, bias
 
 
     def signum(self, x):
@@ -246,7 +254,7 @@ class functions:
         predictions = np.array(predictions)
 
         if(self.algorithm_type == 'Adaline'):
-            predictions = (predictions >= 0).astype(int)
+            predictions = (predictions >= 0.5).astype(int)
 
         return predictions
 

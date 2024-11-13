@@ -1,5 +1,9 @@
-- why is line not seperating well?
-- check if models work correctly
-- accuracy array has some nan values (in percepron) (done)
-- plot confusion matrix (done)
-- check شكل output el confusion matrix w salma
+- why is the line not seperating well?
+
+- check if models work correctly:
+-   (perceptron done) 
+-   (adaline not yet)
+- 
+- map the (-1 , 1) to (0 , 1)
+- FP always 0 f adaline (رجعت الthreshold ل 0.5)
+- TN w FN always 0 f perceptrons
