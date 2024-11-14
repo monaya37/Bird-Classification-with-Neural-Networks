@@ -114,6 +114,28 @@ class Task1:
                         f"Threshold: {self.get_threshold()}\n"
                         f"Include Bias: {self.bias_var.get()}\n"
                         f"Algorithm Type: {self.get_algorithm_type()}")
+        
+    # Getters
+    def get_epochs(self):
+        return self.epochs_entry.get()
+
+    def get_learning_rate(self):
+        return self.learning_rate_entry.get()
+
+    def get_threshold(self):
+        return self.threshold_entry.get()
+
+    def get_selected_features(self):
+        return [feature for feature, var in zip(self.features, self.features_list) if var.get()]
+
+    def get_selected_classes(self):
+        return [c for c, var in zip(self.classes, self.classes_list) if var.get()]
+
+    def get_bias_state(self):
+        return self.bias_var.get()
+
+    def get_algorithm_type(self):
+        return self.algorithm_var.get()
     
 
 

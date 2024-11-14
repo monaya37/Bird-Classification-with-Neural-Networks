@@ -24,44 +24,23 @@ class functions:
         self.activation_function = None
         self.dataset = None
 
-    # Getters
-    def get_epochs(self):
-        return self.gui.epochs_entry.get()
-
-    def get_learning_rate(self):
-        return self.gui.learning_rate_entry.get()
-
-    def get_threshold(self):
-        return self.gui.threshold_entry.get()
-
-    def get_selected_features(self):
-        return [feature for feature, var in zip(self.gui.features, self.gui.features_list) if var.get()]
-
-    def get_selected_classes(self):
-        return [c for c, var in zip(self.gui.classes, self.gui.classes_list) if var.get()]
-
-    def get_bias_state(self):
-        return self.gui.bias_var.get()
-
-    def get_algorithm_type(self):
-        return self.gui.algorithm_var.get()
-
     # Functions
     def run_algorithm(self):
 
         #initilize global variables
         self.dataset = self.read_file('birds.csv')
-        self.epochs = int(self.get_epochs())
-        self.learning_rate = float(self.get_learning_rate())
-        self.threshold = float(self.get_threshold())
-        self.selected_features = self.get_selected_features()
-        self.selected_classes = self.get_selected_classes()
-        self.include_bias = self.get_bias_state()
-        self.algorithm_type = self.get_algorithm_type()
+        self.epochs = int(self.gui.get_epochs())
+        self.learning_rate = float(self.gui.get_learning_rate())
+        self.threshold = float(self.gui.get_threshold())
+        self.selected_features = self.gui.get_selected_features()
+        self.selected_classes = self.gui.get_selected_classes()
+        self.include_bias = self.gui.get_bias_state()
+        self.algorithm_type = self.gui.get_algorithm_type()
 
         if(self.algorithm_type == 'Perceptron'):
             self.activation_function = self.signum
-            min = -1
+            #min = -1
+            min = 0
             max = 1
         else:
             self.activation_function = self.linear
@@ -191,7 +170,7 @@ class functions:
                 if counter == n:
                     break
 
-        else:
+        elif(self.algorithm_type == 'Adaline'):
 
             for _ in range(self.epochs):
                 
@@ -252,6 +231,9 @@ class functions:
                 predictions.append(y_predict)
 
         predictions = np.array(predictions)
+
+        if(self.algorithm_type == 'Perceptron'):
+            predictions = np.array([1 if prediction == 1 else 0 for prediction in predictions])
 
         if(self.algorithm_type == 'Adaline'):
             predictions = (predictions >= 0.5).astype(int)

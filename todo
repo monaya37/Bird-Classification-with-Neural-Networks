@@ -1,9 +1,6 @@
-- why is the line not seperating well?
-
 - check if models work correctly:
 -   (perceptron done) 
 -   (adaline not yet)
 - 
-- map the (-1 , 1) to (0 , 1)
-- FP always 0 f adaline (رجعت الthreshold ل 0.5)
-- TN w FN always 0 f perceptrons
+- FP always 0 f adaline (changed threshold to 0.5 and for some unknown reason it worked)
+- TN w FN always 0 f perceptrons (mapped (-1, 1) ==> (0, 1) and it worked)
