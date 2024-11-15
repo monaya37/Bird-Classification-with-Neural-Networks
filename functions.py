@@ -23,6 +23,8 @@ class functions:
         self.algorithm_type = None
         self.activation_function = None
         self.dataset = None
+        self.min = None
+        self.max = None
 
     # Functions
     def run_algorithm(self):
@@ -39,14 +41,14 @@ class functions:
 
         if(self.algorithm_type == 'Perceptron'):
             self.activation_function = self.signum
-            #min = -1
-            min = 0
-            max = 1
+            self.min = -1
+            self.max = 1
         else:
             self.activation_function = self.linear
-            min = 0
-            max = 1
+            self.min = 0
+            self.max = 1
 
+        self.gui.show_selected()
         # Split based on selected
         X_train, X_test, y_train, y_test = self.split_to_train_test(self.dataset)
 
@@ -54,14 +56,15 @@ class functions:
         X_train, X_test = self.preprocess_features(X_train, X_test, self.selected_features)
         y_train, y_test = self.preprocess_target(y_train, y_test)
 
+
+
         # Train model
         weights, bias = self.train_model(X_train, y_train)
+        
         y_pred = self.predict(X_test, weights, bias)
-        print("y predcted: ", y_pred)
-        print("y actual: ", y_test)
 
         # Evaluate the performance
-        TP , TN, FP, FN = self.evaluate_predictions(y_test, y_pred, min, max) 
+        TP , TN, FP, FN = self.evaluate_predictions(y_test, y_pred, self.min, self.max) 
         self.plot_confusion_matrix(TP, TN, FP, FN)
 
         self.plot_function(X_train, y_train, weights, bias)
@@ -137,6 +140,15 @@ class functions:
             y_train = le.transform(y_train)  
             y_test = le.transform(y_test) 
 
+        if (self.algorithm_type == "Perceptron"):
+            y_train = np.array([1 if y == 1 else -1 for y in y_train])
+            y_test = np.array([1 if y == 1 else -1 for y in y_test])
+
+        print("y predcted: ", y_train)
+        print("y actual: ", y_test)
+
+        
+
         return y_train, y_test
 
 
@@ -151,12 +163,13 @@ class functions:
         bias = 0
 
         
-        if self.algorithm_type == "Perceptron":            
+        if self.algorithm_type == "Perceptron":   
+                     
             for _ in range(self.epochs):
                 counter = 0
 
                 for i in range(n):
-                    y_predict = sum(weights * X_train[i]) + bias
+                    y_predict = np.dot(weights , X_train[i]) + bias
                     y_predict = self.activation_function(y_predict)
                     error = y_train[i] -  y_predict
                     if error != 0:
@@ -173,23 +186,23 @@ class functions:
         elif(self.algorithm_type == 'Adaline'):
 
             for _ in range(self.epochs):
-                
                 errors = []
 
                 for i in range(n):
-
-                    y_predict = sum(weights * X_train[i]) + bias
+                    y_predict = np.dot(weights , X_train[i]) + bias
                     y_predict = self.activation_function(y_predict)
                     error = y_train[i] -  y_predict
+
 
                     weights, bias = self.update_weights_and_bias(
                         weights, bias, X_train[i], error
                     )
-
+                    #print("w:", weights)
+                    #print("b:", bias)
                     errors.append((error**2))
 
-                mse = np.mean(errors)
-                if mse < self.threshold:
+                mse = np.mean(errors)/2
+                if mse <= self.threshold:
                     break
 
         return weights, bias
@@ -219,24 +232,20 @@ class functions:
         predictions = []
         X_test = X_test.values
 
-        if(self.include_bias):
-            for i in range(X_test.shape[0]):
-                y_predict = np.dot(weights, X_test[i]) + bias
-                y_predict = self.activation_function(y_predict)
-                predictions.append(y_predict)
-        else:
-            for i in range(X_test.shape[0]):
-                y_predict = np.dot(weights, X_test[i])
-                y_predict = self.activation_function(y_predict)
-                predictions.append(y_predict)
+        for i in range(X_test.shape[0]):
+            y_predict = np.dot(weights, X_test[i]) + bias
+            y_predict = self.activation_function(y_predict)
+            predictions.append(y_predict)
 
         predictions = np.array(predictions)
 
-        if(self.algorithm_type == 'Perceptron'):
-            predictions = np.array([1 if prediction == 1 else 0 for prediction in predictions])
+        #if(self.algorithm_type == 'Perceptron'):
+         #   predictions = np.array([1 if prediction == 1 else 0 for prediction in predictions])
 
+        print("precdicions before: ", predictions)
         if(self.algorithm_type == 'Adaline'):
-            predictions = (predictions >= 0.5).astype(int)
+            predictions = (predictions >= 0).astype(int)
+        print("precdicions AFTER: ", predictions)
 
         return predictions
 
@@ -292,13 +301,17 @@ class functions:
         X = X.values
 
         self.gui.ax1.clear()
-        self.gui.ax1.scatter(X[Y == 0, 0], X[Y == 0, 1], color='red', label=self.selected_classes[0])
-        self.gui.ax1.scatter(X[Y == 1, 0], X[Y == 1, 1], color='blue', label=self.selected_classes[1])
+
+
+        self.gui.ax1.scatter(X[Y == self.min, 0], X[Y == self.min, 1], color='red', label=self.selected_classes[0])
+        self.gui.ax1.scatter(X[Y == self.max, 0], X[Y == self.max , 1], color='blue', label=self.selected_classes[1])
 
         x1 = np.linspace(min(X[:, 0]), max(X[:, 0]), 100)
 
         # bias = 0, if the box is unchecked
-        x2 = -(weights[0] * x1 + bias) / weights[1]
+        #x1w1 + x2w2 + bias = 0
+        #x2 = -(weights[0] * x1 + bias) / weights[1]
+        x2 = (-bias - (weights[0] * x1)) /  weights[1]
 
 
         # Plot the decision boundary line

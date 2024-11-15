@@ -108,8 +108,8 @@ class Task1:
 
     def show_selected(self):
         print("Selected Options", 
-                        f"Features: {self.get_chosen_features()}\n"
-                        f"Classes: {self.get_chosen_classes()}\n"
+                        f"Features: {self.get_selected_features()}\n"
+                        f"Classes: {self.get_selected_classes()}\n"
                         f"Learning Rate: {self.get_learning_rate()}\n"
                         f"Threshold: {self.get_threshold()}\n"
                         f"Include Bias: {self.bias_var.get()}\n"

@@ -1,6 +1,7 @@
 - check if models work correctly:
--   (perceptron done) 
 -   (adaline not yet)
 - 
 - FP always 0 f adaline (changed threshold to 0.5 and for some unknown reason it worked)
 - TN w FN always 0 f perceptrons (mapped (-1, 1) ==> (0, 1) and it worked)
+
+- copy modified confusion
