@@ -83,7 +83,7 @@ class functions:
             X_train["gender"].fillna(gender_mode, inplace=True)
             X_test["gender"].fillna(gender_mode, inplace=True)
 
-        # Handle outliers
+        # Handle outliers 
         numeric_cols = ["body_mass", "beak_length", "beak_depth", "fin_length"]
         numeric_cols = list(set(numeric_cols) & set(selected_features))
 
@@ -266,9 +266,13 @@ class functions:
 
         print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
         print(f"Accuracy: {accuracy}%")
+        self.update_accuracy(accuracy)
 
         return TP, TN, FP, FN 
 
+    # Method to update accuracy label
+    def update_accuracy(self, accuracy):
+        self.gui.accuracy_label.config(text=f"Accuracy: {accuracy:.2f}%")
 
     def split_to_train_test(self, dataset):
 

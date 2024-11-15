@@ -7,15 +7,18 @@ class App:
     def __init__(self, root):
         self.root = root
 
+        large_font = ('Helvetica', 14)  # Change the font to Arial
+
+
         self.root.title("ANN TASKS")
-        self.root.geometry("1050x900")
+        self.root.geometry("1050x980")
         self.root.configure(padx=20, pady=20)
 
         self.button_frame = tk.Frame(root)
         self.button_frame.grid(row=0, column=0, columnspan=2, sticky='ew')
 
         # Create buttons to switch between tabs using grid
-        self.tab1_button = tk.Button(self.button_frame, text="Task 1", command=self.show_task1)
+        self.tab1_button = tk.Button(self.button_frame, text="Task 1", command=self.show_task1, font=large_font)
         self.tab1_button.grid(row=0, column=0, padx=(0, 0), pady=5)
 
         # Create frames for each tab

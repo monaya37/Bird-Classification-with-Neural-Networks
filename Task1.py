@@ -11,7 +11,7 @@ class Task1:
         self.parent = parent
         self.functions_instance = functions(self)
 
-        large_font = ('Helvetica', 12)  # Change the font to Arial
+        large_font = ('Helvetica', 14)  # Change the font to Arial
 
         # Create main frame
         self.frame = tk.Frame(self.parent)
@@ -19,6 +19,9 @@ class Task1:
 
         # Figure and canvas for plotting
         self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+        #self.fig.subplots_adjust(wspace=0.5)  # Adjust the space between subplots
+
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.frame)
         self.canvas.get_tk_widget().grid(row=4, column=0, columnspan=4)
 
@@ -103,6 +106,13 @@ class Task1:
         self.submit_button = tk.Button(self.frame, text="Submit", command=lambda: self.functions_instance.run_algorithm(), font=large_font)
         self.submit_button.grid(row=1, column=0, columnspan=4, pady=20)
 
+        # White box for displaying accuracy
+        self.accuracy_label_frame = tk.Frame(self.frame)
+        self.accuracy_label_frame.grid(row=5, column=0, columnspan=4, pady=(20, 10))
+
+        self.accuracy_label = tk.Label(self.accuracy_label_frame, text="Accuracy: N/A", font=large_font, bg="white", relief="solid", width=20, height=2)
+        self.accuracy_label.pack()
+       
         self.dataset = None
 
 
