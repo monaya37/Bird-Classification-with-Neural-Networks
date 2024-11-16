@@ -23,8 +23,12 @@ class functions:
         self.algorithm_type = None
         self.activation_function = None
         self.dataset = None
+
         self.min = None
         self.max = None
+        self.weights = None
+        self.bias = None
+
 
     # Functions
     def run_algorithm(self):
@@ -48,9 +52,11 @@ class functions:
             self.min = 0
             self.max = 1
 
-        self.gui.show_selected()
         # Split based on selected
         X_train, X_test, y_train, y_test = self.split_to_train_test(self.dataset)
+
+        X_train = X_train.values
+        y_train = np.array(y_train, dtype=float)
 
         # Preprocess
         X_train, X_test = self.preprocess_features(X_train, X_test, self.selected_features)
@@ -60,11 +66,10 @@ class functions:
 
         # Train model
         weights, bias = self.train_model(X_train, y_train)
-        
         y_pred = self.predict(X_test, weights, bias)
 
-        # Evaluate the performance
-        TP , TN, FP, FN = self.evaluate_predictions(y_test, y_pred, self.min, self.max) 
+        # Evaluate  performance
+        TP, TN, FP, FN = self.evaluate_predictions(y_test, y_pred, self.min, self.max) 
         self.plot_confusion_matrix(TP, TN, FP, FN)
 
         self.plot_function(X_train, y_train, weights, bias)
@@ -144,75 +149,52 @@ class functions:
             y_train = np.array([1 if y == 1 else -1 for y in y_train])
             y_test = np.array([1 if y == 1 else -1 for y in y_test])
 
-        # print("y predcted: ", y_train)
-        # print("y actual: ", y_test)
-
-        
-
         return y_train, y_test
 
 
     def train_model(self, X_train, y_train):
 
         n = X_train.shape[0]
-        X_train = X_train.values
 
-        y_train = np.array(y_train, dtype=float)
-        weights = np.random.randn(X_train.shape[1])
-
-        bias = 0
-
+        self.bias = 0
+        self.weights = np.random.randn(X_train.shape[1])
         
         if self.algorithm_type == "Perceptron":   
-            weights, bias = self.Perceptron(X_train, y_train , weights, bias, n)
+            weights, bias = self.Perceptron(X_train, y_train, n)
 
         else:
-            weights, bias = self.Adaline(X_train, y_train, weights, bias, n)
+            weights, bias = self.Adaline(X_train, y_train, n)
             
  
         return weights, bias
 
-    def Perceptron(self, X_train, y_train, weights, bias,n):
+    def Perceptron(self, X_train, y_train,n):
                     
         for _ in range(self.epochs):
             counter = 0
 
             for i in range(n):
-
-                y_predict = np.dot(weights , X_train[i]) + bias
-                y_predict = self.activation_function(y_predict)
-                error = y_train[i] -  y_predict
-
+                error = self.compute_error(X_train, y_train[i])
                 if error != 0:
                     counter = 0
-                    weights, bias = self.update_weights_and_bias(
-                        weights, bias, X_train[i], error
-                    )
+                    self.update_weights_and_bias(X_train[i], error)
                 else:
                     counter += 1
 
             if counter == n:
                 break
-        return weights, bias
+        return self.weights, self.bias
     
 
     
-    def Adaline(self, X_train, y_train, weights, bias,n):
+    def Adaline(self, X_train, y_train, n):
 
         for _ in range(self.epochs):
             errors = []
 
             for i in range(n):
-                y_predict = np.dot(weights , X_train[i]) + bias
-                y_predict = self.activation_function(y_predict)
-
-                y_predict = (y_predict >= 0).astype(float)  
-
-                error = y_train[i] -  y_predict
-                weights, bias = self.update_weights_and_bias(
-                    weights, bias, X_train[i], error
-                )
-
+                error = self.compute_error(X_train, y_train[i])
+                self.update_weights_and_bias(X_train[i], error)
                 errors.append(error)
 
             mse = np.mean(np.square(errors)) *( 1/ 2)
@@ -221,17 +203,19 @@ class functions:
             if mse < self.threshold:
                 break
 
-        return weights, bias
+        return self.weights, self.bias
+    
 
-    def update_weights_and_bias(self, weights, bias, X, error):
+
+    def update_weights_and_bias(self, X, error):
 
         if self.include_bias:
-            weights = weights + self.learning_rate * error * X
-            bias = bias + self.learning_rate * error
+            self.weights = self.weights + self.learning_rate * error * X
+            self.bias = self.bias + self.learning_rate * error
         else:
             weights = weights + self.learning_rate * error * X
 
-        return weights, bias
+        return weights, self.bias
 
 
     def signum(self, x):
@@ -242,26 +226,37 @@ class functions:
         return x
 
 
-    def predict(self, X_test, weights, bias):
+    def compute_error(self, X, y):
+
+        X = X.values
+
+        y_predict = np.dot(self.weights, X) + self.bias
+        y_predict = self.activation_function(y_predict)
+
+        if(self.algorithm_type == 'Adaline'):
+            y_predict = (y_predict >= 0).astype(float)
+
+        error = y - y_predict
+
+        return error
+
+
+    def predict(self, X, weights, bias):
 
         predictions = []
-        X_test = X_test.values
+        X = X.values
 
-        for i in range(X_test.shape[0]):
-            y_predict = np.dot(weights, X_test[i]) + bias
+        for i in range(X.shape[0]):
+            y_predict = np.dot(weights, X[i]) + bias
             y_predict = self.activation_function(y_predict)
             predictions.append(y_predict)
 
         predictions = np.array(predictions)
 
-        #if(self.algorithm_type == 'Perceptron'):
-         #   predictions = np.array([1 if prediction == 1 else 0 for prediction in predictions])
-
         if(self.algorithm_type == 'Adaline'):
             predictions = (predictions >= 0).astype(float)
 
         return predictions
-
 
     def evaluate_predictions(self, y_true, y_pred, min, max):
         TP = sum((y_true == max) & (y_pred == max))
