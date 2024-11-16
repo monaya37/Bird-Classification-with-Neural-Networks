@@ -144,8 +144,8 @@ class functions:
             y_train = np.array([1 if y == 1 else -1 for y in y_train])
             y_test = np.array([1 if y == 1 else -1 for y in y_test])
 
-        print("y predcted: ", y_train)
-        print("y actual: ", y_test)
+        # print("y predcted: ", y_train)
+        # print("y actual: ", y_test)
 
         
 
@@ -164,49 +164,64 @@ class functions:
 
         
         if self.algorithm_type == "Perceptron":   
-                     
-            for _ in range(self.epochs):
-                counter = 0
+            weights, bias = self.Perceptron(X_train, y_train , weights, bias, n)
 
-                for i in range(n):
-                    y_predict = np.dot(weights , X_train[i]) + bias
-                    y_predict = self.activation_function(y_predict)
-                    error = y_train[i] -  y_predict
-                    if error != 0:
-                        counter = 0
-                        weights, bias = self.update_weights_and_bias(
-                            weights, bias, X_train[i], error
-                        )
-                    else:
-                        counter += 1
+        else:
+            weights, bias = self.Adaline(X_train, y_train, weights, bias, n)
+            
+ 
+        return weights, bias
 
-                if counter == n:
-                    break
+    def Perceptron(self, X_train, y_train, weights, bias,n):
+                    
+        for _ in range(self.epochs):
+            counter = 0
 
-        elif(self.algorithm_type == 'Adaline'):
+            for i in range(n):
 
-            for _ in range(self.epochs):
-                errors = []
+                y_predict = np.dot(weights , X_train[i]) + bias
+                y_predict = self.activation_function(y_predict)
+                error = y_train[i] -  y_predict
 
-                for i in range(n):
-                    y_predict = np.dot(weights , X_train[i]) + bias
-                    y_predict = self.activation_function(y_predict)
-                    error = y_train[i] -  y_predict
-
-
+                if error != 0:
+                    counter = 0
                     weights, bias = self.update_weights_and_bias(
                         weights, bias, X_train[i], error
                     )
-                    #print("w:", weights)
-                    #print("b:", bias)
-                    errors.append((error**2))
+                else:
+                    counter += 1
 
-                mse = np.mean(errors)/2
-                if mse <= self.threshold:
-                    break
+            if counter == n:
+                break
+        return weights, bias
+    
+
+    
+    def Adaline(self, X_train, y_train, weights, bias,n):
+
+        for _ in range(self.epochs):
+            errors = []
+
+            for i in range(n):
+                y_predict = np.dot(weights , X_train[i]) + bias
+                y_predict = self.activation_function(y_predict)
+
+                y_predict = (y_predict >= 0).astype(float)  
+
+                error = y_train[i] -  y_predict
+                weights, bias = self.update_weights_and_bias(
+                    weights, bias, X_train[i], error
+                )
+
+                errors.append(error)
+
+            mse = np.mean(np.square(errors)) *( 1/ 2)
+            mse = round(mse, 2)
+
+            if mse < self.threshold:
+                break
 
         return weights, bias
-
 
     def update_weights_and_bias(self, weights, bias, X, error):
 
@@ -224,7 +239,7 @@ class functions:
 
 
     def linear(self, x):
-        return float(x) 
+        return x
 
 
     def predict(self, X_test, weights, bias):
@@ -242,10 +257,8 @@ class functions:
         #if(self.algorithm_type == 'Perceptron'):
          #   predictions = np.array([1 if prediction == 1 else 0 for prediction in predictions])
 
-        print("precdicions before: ", predictions)
         if(self.algorithm_type == 'Adaline'):
-            predictions = (predictions >= 0).astype(int)
-        print("precdicions AFTER: ", predictions)
+            predictions = (predictions >= 0).astype(float)
 
         return predictions
 
@@ -314,8 +327,8 @@ class functions:
 
         # bias = 0, if the box is unchecked
         #x1w1 + x2w2 + bias = 0
-        #x2 = -(weights[0] * x1 + bias) / weights[1]
-        x2 = (-bias - (weights[0] * x1)) /  weights[1]
+        x2 = -(weights[0] * x1 + bias) / weights[1]
+        #x2 = (-bias - (weights[0] * x1)) /  weights[1]
 
 
         # Plot the decision boundary line
