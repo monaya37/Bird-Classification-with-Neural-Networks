@@ -55,30 +55,22 @@ class functions:
         # Split based on selected
         X_train, X_test, y_train, y_test = self.split_to_train_test(self.dataset)
 
-        X_train = X_train.values
-        y_train = np.array(y_train, dtype=float)
-
         # Preprocess
         X_train, X_test = self.preprocess_features(X_train, X_test, self.selected_features)
         y_train, y_test = self.preprocess_target(y_train, y_test)
 
-
-
         # Train model
-        weights, bias = self.train_model(X_train, y_train)
-        y_pred = self.predict(X_test, weights, bias)
+        self.train_model(X_train, y_train)
+        y_pred = self.predict(X_test)
 
         # Evaluate  performance
-        TP, TN, FP, FN = self.evaluate_predictions(y_test, y_pred, self.min, self.max) 
-        self.plot_confusion_matrix(TP, TN, FP, FN)
-
-        self.plot_function(X_train, y_train, weights, bias)
+        self.evaluate_predictions(y_test, y_pred, self.min, self.max) 
+        self.plot_function(X_train, y_train)
 
 
     def read_file(self, path):
         dataset = pd.read_csv(path)
         return dataset
-
 
     def preprocess_features(self, X_train, X_test, selected_features):
 
@@ -134,6 +126,7 @@ class functions:
         X_train[col_names] = scaler.transform(X_train[col_names])
         X_test[col_names] = scaler.transform(X_test[col_names])
 
+        X_train = X_train.values
         return X_train, X_test
 
 
@@ -149,6 +142,8 @@ class functions:
             y_train = np.array([1 if y == 1 else -1 for y in y_train])
             y_test = np.array([1 if y == 1 else -1 for y in y_test])
 
+        y_train = np.array(y_train, dtype=float)
+
         return y_train, y_test
 
 
@@ -160,21 +155,19 @@ class functions:
         self.weights = np.random.randn(X_train.shape[1])
         
         if self.algorithm_type == "Perceptron":   
-            weights, bias = self.Perceptron(X_train, y_train, n)
+            self.Perceptron(X_train, y_train, n)
 
         else:
-            weights, bias = self.Adaline(X_train, y_train, n)
+            self.Adaline(X_train, y_train, n)
             
  
-        return weights, bias
-
     def Perceptron(self, X_train, y_train,n):
                     
         for _ in range(self.epochs):
             counter = 0
 
             for i in range(n):
-                error = self.compute_error(X_train, y_train[i])
+                error = self.compute_error(X_train[i], y_train[i])
                 if error != 0:
                     counter = 0
                     self.update_weights_and_bias(X_train[i], error)
@@ -183,8 +176,6 @@ class functions:
 
             if counter == n:
                 break
-        return self.weights, self.bias
-    
 
     
     def Adaline(self, X_train, y_train, n):
@@ -193,17 +184,15 @@ class functions:
             errors = []
 
             for i in range(n):
-                error = self.compute_error(X_train, y_train[i])
+                error = self.compute_error(X_train[i], y_train[i])
                 self.update_weights_and_bias(X_train[i], error)
                 errors.append(error)
 
-            mse = np.mean(np.square(errors)) *( 1/ 2)
+            mse = np.mean(np.square(errors)) * (1/ 2)
             mse = round(mse, 2)
 
             if mse < self.threshold:
                 break
-
-        return self.weights, self.bias
     
 
 
@@ -213,9 +202,9 @@ class functions:
             self.weights = self.weights + self.learning_rate * error * X
             self.bias = self.bias + self.learning_rate * error
         else:
-            weights = weights + self.learning_rate * error * X
+            self.weights = self.weights + self.learning_rate * error * X
 
-        return weights, self.bias
+        return self.weights, self.bias
 
 
     def signum(self, x):
@@ -228,8 +217,6 @@ class functions:
 
     def compute_error(self, X, y):
 
-        X = X.values
-
         y_predict = np.dot(self.weights, X) + self.bias
         y_predict = self.activation_function(y_predict)
 
@@ -237,17 +224,16 @@ class functions:
             y_predict = (y_predict >= 0).astype(float)
 
         error = y - y_predict
-
         return error
 
-
-    def predict(self, X, weights, bias):
+    #predict test
+    def predict(self, X):
 
         predictions = []
         X = X.values
 
         for i in range(X.shape[0]):
-            y_predict = np.dot(weights, X[i]) + bias
+            y_predict = np.dot(self.weights, X[i]) + self.bias
             y_predict = self.activation_function(y_predict)
             predictions.append(y_predict)
 
@@ -272,15 +258,11 @@ class functions:
             accuracy = (TP + TN) / (TP + TN + FP + FN)
             accuracy *= 100
 
-        print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
-        print(f"Accuracy: {accuracy}%")
+        #print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
+
         self.update_accuracy(accuracy)
+        self.plot_confusion_matrix(TP, TN, FP, FN)
 
-        return TP, TN, FP, FN 
-
-    # Method to update accuracy label
-    def update_accuracy(self, accuracy):
-        self.gui.accuracy_label.config(text=f"Accuracy: {accuracy:.2f}%")
 
     def split_to_train_test(self, dataset):
 
@@ -290,8 +272,7 @@ class functions:
         for cls in self.selected_classes:
 
             class_data = dataset[dataset['bird category'] == cls]
-            class_data = shuffle(class_data, random_state =0)  # Shuffle data within each class
-            #print(cls)
+            class_data = shuffle(class_data, random_state = 0)  # Shuffle data within each class
 
             # Select 30 samples for training and 20 for testing
             train_data.append(class_data.iloc[:30])
@@ -308,23 +289,16 @@ class functions:
         return X_train, X_test, y_train, y_test
 
 
-    def plot_function(self, X, Y, weights, bias):
-
-        X = X.values
+    def plot_function(self, X, Y):
 
         self.gui.ax1.clear()
-
 
         self.gui.ax1.scatter(X[Y == self.min, 0], X[Y == self.min, 1], color='red', label=self.selected_classes[0])
         self.gui.ax1.scatter(X[Y == self.max, 0], X[Y == self.max , 1], color='blue', label=self.selected_classes[1])
 
         x1 = np.linspace(min(X[:, 0]), max(X[:, 0]), 100)
 
-        # bias = 0, if the box is unchecked
-        #x1w1 + x2w2 + bias = 0
-        x2 = -(weights[0] * x1 + bias) / weights[1]
-        #x2 = (-bias - (weights[0] * x1)) /  weights[1]
-
+        x2 = -(self.weights[0] * x1 + self.bias) / self.weights[1]
 
         # Plot the decision boundary line
         self.gui.ax1.plot(x1, x2, color='green', label='Decision Boundary')
@@ -351,37 +325,6 @@ class functions:
 
         self.gui.canvas.draw()
 
-
-    # check w salma 
-
-    # def evaluate_predictions_perceptron(self, y_true, y_pred):
-    #     TP = sum((y_true == 1) & (y_pred == 1))
-    #     TN = sum((y_true == -1) & (y_pred == -1))
-    #     FP = sum((y_true == -1) & (y_pred == 1))
-    #     FN = sum((y_true == 1) & (y_pred == -1))
-
-    #     # Avoid division by zero
-    #     if np.all(TP + TN + FP + FN == 0):
-    #         print("Warning: No predictions made.")
-    #         accuracy = 0
-    #     else:
-    #         accuracy = (TP + TN) / (TP + TN + FP + FN)
-
-    #     print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
-    #     print(f"Accuracy: {accuracy}")
-
-    # def evaluate_predictions_adaline(self, y_true, y_pred):
-    #     TP = sum((y_true == 1) & (y_pred == 1))
-    #     TN = sum((y_true == 0) & (y_pred == 0))
-    #     FP = sum((y_true == 0) & (y_pred == 1))
-    #     FN = sum((y_true == 1) & (y_pred == 0))
-
-    #     # Avoid division by zero
-    #     if np.all(TP + TN + FP + FN == 0):
-    #         print("Warning: No predictions made.")
-    #         accuracy = 0
-    #     else:
-    #         accuracy = (TP + TN) / (TP + TN + FP + FN)
-
-    #     print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
-    #     print(f"Accuracy: {accuracy}")
+    # Method to update accuracy label
+    def update_accuracy(self, accuracy):
+        self.gui.accuracy_label.config(text=f"Accuracy: {accuracy:.2f}%")

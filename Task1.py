@@ -146,8 +146,6 @@ class Task1:
 
     def get_algorithm_type(self):
         return self.algorithm_var.get()
-    
-
 
     #GUI Functions
     def display(self):

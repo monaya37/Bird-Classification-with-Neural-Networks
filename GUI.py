@@ -9,7 +9,6 @@ class App:
 
         large_font = ('Helvetica', 14)  # Change the font to Arial
 
-
         self.root.title("ANN TASKS")
         self.root.geometry("1050x980")
         self.root.configure(padx=20, pady=20)
