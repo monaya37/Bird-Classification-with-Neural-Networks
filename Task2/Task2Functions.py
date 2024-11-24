@@ -7,8 +7,8 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from random import shuffle
 from sklearn.utils import shuffle
 import seaborn as sns
-
-# task1 functions
+from Functions import *
+# task2 functions
 class Task2Functions:
 
     def __init__(self, gui):
@@ -30,99 +30,29 @@ class Task2Functions:
     def run_algorithm(self):
 
         #initilize global variables
-        self.dataset = self.read_file('birds.csv')
+        self.dataset = read_file('birds.csv')
         self.epochs = int(self.gui.get_epochs())
         self.learning_rate = float(self.gui.get_learning_rate())
         self.include_bias = self.gui.get_bias_state()
         self.activation_function = self.gui.get_algorithm_type()
         self.gui.show_selected()
 
-        if(self.algorithm_type == 'Sigmoid'):
+        if(self.activation_function == 'Sigmoid'):
             return
         else:
             return
-
-
-
-    def read_file(self, path):
-        dataset = pd.read_csv(path)
-        return dataset
-
-    def preprocess_features(self, X_train, X_test):
-
-        # Fill na
-        if "gender" in X_train.columns:
-            gender_mode = X_train["gender"].mode()[0]
-            X_train["gender"].fillna(gender_mode, inplace=True)
-            X_test["gender"].fillna(gender_mode, inplace=True)
-
-        # Handle outliers 
-        numeric_cols = ["body_mass", "beak_length", "beak_depth", "fin_length"]
-
-        lower_bounds = {}
-        upper_bounds = {}
-
-        for col in numeric_cols:
-            Q1 = X_train[col].quantile(0.25)
-            Q3 = X_train[col].quantile(0.75)
-            IQR = Q3 - Q1
-            lower_bounds[col] = Q1 - 1.5 * IQR
-            upper_bounds[col] = Q3 + 1.5 * IQR
-
-            # Replace outliers with median
-            median = X_train[col].median()
-            X_train[col] = X_train[col].apply(
-                lambda x: x if lower_bounds[col] <= x <= upper_bounds[col] else median
-            )
-
-        # handle outliears (X_test)
-        for col in numeric_cols:
-            X_test[col] = X_test[col].apply(
-                lambda x: (
-                    x
-                    if lower_bounds[col] <= x <= upper_bounds[col]
-                    else X_train[col].median()
-                )
-            )
-
-        # Encode categoricals
-        le = LabelEncoder()
-        for i in X_train.columns:
-            if X_train[i].dtype == "O":  # if the column is categorical
-                le.fit(X_train[i])
-                X_train[i] = le.transform(X_train[i])
-                X_test[i] = le.transform(X_test[i])
-
-
-        # Scale data
-        scaler = StandardScaler()
-        col_names = X_train.columns
-        scaler.fit(X_train[col_names])
-        X_train[col_names] = scaler.transform(X_train[col_names])
-        X_test[col_names] = scaler.transform(X_test[col_names])
-
-        X_train = X_train.values
-        return X_train, X_test
-
-
-    def preprocess_target(self, y_train, y_test):
-
-        le = LabelEncoder()
-        if (y_train.dtype == "O"):  # if the column is categorical
-            le.fit(y_train)  
-            y_train = le.transform(y_train)  
-            y_test = le.transform(y_test) 
-
-        return y_train, y_test
 
 
     def train_model(self, X_train, y_train):
         #TO-DO
         return
             
-    
+    def sigmoid(self, x):
+        return 
 
-
+    def tanh(self, x):
+        return 
+   
     def update_weights_and_bias(self, X, error):
 
         if self.include_bias:
@@ -132,15 +62,6 @@ class Task2Functions:
             self.weights = self.weights + self.learning_rate * error * X
 
         return self.weights, self.bias
-
-
-    def sigmoid(self, x):
-           return 
-
-
-    def tanh(self, x):
-        return 
-
 
     def compute_error(self, X, y):
 
@@ -166,6 +87,21 @@ class Task2Functions:
 
         return predictions
 
+
+    def split_to_train_test(self, dataset):
+        #TO-DO
+        train_data = []
+        test_data = []
+
+        #return X_train, X_test, y_train, y_test
+        return
+
+
+    def plot_function(self, X, Y):
+        #TO-DO
+        return
+
+
     def evaluate_predictions(self, y_true, y_pred, min, max):
         TP = sum((y_true == max) & (y_pred == max))
         TN = sum((y_true == min) & (y_pred == min))
@@ -185,21 +121,6 @@ class Task2Functions:
         self.update_accuracy(accuracy)
         self.plot_confusion_matrix(TP, TN, FP, FN)
 
-
-    def split_to_train_test(self, dataset):
-        #TO-DO
-        train_data = []
-        test_data = []
-
-        #return X_train, X_test, y_train, y_test
-        return
-
-
-    def plot_function(self, X, Y):
-        #TO-DO
-        return
-
-
     def plot_confusion_matrix(self, TP, TN, FP, FN):
 
         confusion_matrix = np.array([[TP, FN], [FP, TN]])
@@ -216,6 +137,5 @@ class Task2Functions:
 
         self.gui.canvas.draw()
 
-    # Method to update accuracy label
     def update_accuracy(self, accuracy):
         self.gui.accuracy_label.config(text=f"Accuracy: {accuracy:.2f}%")

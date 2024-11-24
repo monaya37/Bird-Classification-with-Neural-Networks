@@ -7,6 +7,7 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from random import shuffle
 from sklearn.utils import shuffle
 import seaborn as sns
+from Functions import *
 
 # task1 functions
 class Task1Functions:
@@ -34,7 +35,7 @@ class Task1Functions:
     def run_algorithm(self):
 
         #initilize global variables
-        self.dataset = self.read_file('birds.csv')
+        self.dataset = read_file('birds.csv')
         self.epochs = int(self.gui.get_epochs())
         self.learning_rate = float(self.gui.get_learning_rate())
         self.threshold = float(self.gui.get_threshold())
@@ -57,8 +58,8 @@ class Task1Functions:
         X_train, X_test, y_train, y_test = self.split_to_train_test(self.dataset)
 
         # Preprocess
-        X_train, X_test = self.preprocess_features(X_train, X_test, self.selected_features)
-        y_train, y_test = self.preprocess_target(y_train, y_test)
+        X_train, X_test = preprocess_features(X_train, X_test, self.selected_features)
+        y_train, y_test = preprocess_target(y_train, y_test)
 
         # Train model
         self.train_model(X_train, y_train)
@@ -69,85 +70,7 @@ class Task1Functions:
         self.plot_function(X_train, y_train)
 
 
-    def read_file(self, path):
-        dataset = pd.read_csv(path)
-        return dataset
-
-    def preprocess_features(self, X_train, X_test, selected_features):
-
-        # Fill na
-        if "gender" in X_train.columns:
-            gender_mode = X_train["gender"].mode()[0]
-            X_train["gender"].fillna(gender_mode, inplace=True)
-            X_test["gender"].fillna(gender_mode, inplace=True)
-
-        # Handle outliers 
-        numeric_cols = ["body_mass", "beak_length", "beak_depth", "fin_length"]
-        numeric_cols = list(set(numeric_cols) & set(selected_features))
-
-        lower_bounds = {}
-        upper_bounds = {}
-
-        for col in numeric_cols:
-            Q1 = X_train[col].quantile(0.25)
-            Q3 = X_train[col].quantile(0.75)
-            IQR = Q3 - Q1
-            lower_bounds[col] = Q1 - 1.5 * IQR
-            upper_bounds[col] = Q3 + 1.5 * IQR
-
-            # Replace outliers with median
-            median = X_train[col].median()
-            X_train[col] = X_train[col].apply(
-                lambda x: x if lower_bounds[col] <= x <= upper_bounds[col] else median
-            )
-
-        # handle outliears (X_test)
-        for col in numeric_cols:
-            X_test[col] = X_test[col].apply(
-                lambda x: (
-                    x
-                    if lower_bounds[col] <= x <= upper_bounds[col]
-                    else X_train[col].median()
-                )
-            )
-
-        # Encode categoricals
-        le = LabelEncoder()
-        for i in X_train.columns:
-            if X_train[i].dtype == "O":  # if the column is categorical
-                le.fit(X_train[i])
-                X_train[i] = le.transform(X_train[i])
-                X_test[i] = le.transform(X_test[i])
-
-
-        # Scale data
-        scaler = StandardScaler()
-        col_names = X_train.columns
-        scaler.fit(X_train[col_names])
-        X_train[col_names] = scaler.transform(X_train[col_names])
-        X_test[col_names] = scaler.transform(X_test[col_names])
-
-        X_train = X_train.values
-        return X_train, X_test
-
-
-    def preprocess_target(self, y_train, y_test):
-
-        le = LabelEncoder()
-        if (y_train.dtype == "O"):  # if the column is categorical
-            le.fit(y_train)  
-            y_train = le.transform(y_train)  
-            y_test = le.transform(y_test) 
-
-        if (self.algorithm_type == "Perceptron"):
-            y_train = np.array([1 if y == 1 else -1 for y in y_train])
-            y_test = np.array([1 if y == 1 else -1 for y in y_test])
-
-        y_train = np.array(y_train, dtype=float)
-
-        return y_train, y_test
-
-
+ 
     def train_model(self, X_train, y_train):
 
         n = X_train.shape[0]
