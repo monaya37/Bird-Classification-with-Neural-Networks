@@ -17,8 +17,9 @@ class Task1:
         self.frame = tk.Frame(self.parent)
         self.frame.grid(padx=10, pady=10)
 
+        
         # Figure and canvas for plotting
-        self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(8, 5))
+        self.fig, (self.ax1, self.ax2) = plt.subplots(1, 2, figsize=(10, 5))
 
         #self.fig.subplots_adjust(wspace=0.5)  # Adjust the space between subplots
 
@@ -147,7 +148,7 @@ class Task1:
     def get_algorithm_type(self):
         return self.algorithm_var.get()
 
-    #GUI Functions
+        #GUI Functions
     def display(self):
         self.frame.grid(row=1, column=0, columnspan=2, sticky='nsew')
 
