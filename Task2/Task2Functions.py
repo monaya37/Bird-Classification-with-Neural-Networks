@@ -19,6 +19,8 @@ class Task2Functions:
         self.include_bias = None
         self.activation_function = None
         self.dataset = None
+        self.classes = None
+        self.features = None
 
         self.min = None
         self.max = None
@@ -31,6 +33,8 @@ class Task2Functions:
 
         #initilize global variables
         self.dataset = read_file('birds.csv')
+        self.features = ["gender", "body_mass", "beak_length", "beak_depth", "fin_length"]
+        self.classes = ["A", "B", "C"]
         self.epochs = int(self.gui.get_epochs())
         self.learning_rate = float(self.gui.get_learning_rate())
         self.include_bias = self.gui.get_bias_state()
