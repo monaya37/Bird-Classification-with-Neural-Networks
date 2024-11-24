@@ -12,7 +12,7 @@ import seaborn as sns
 def read_file(path):
     return pd.read_csv(path)
 
-def preprocess_features(X_train, X_test):
+def preprocess_features(X_train, X_test, selected_features):
 
     # Fill na
     if "gender" in X_train.columns:
@@ -22,6 +22,7 @@ def preprocess_features(X_train, X_test):
 
     # Handle outliers 
     numeric_cols = ["body_mass", "beak_length", "beak_depth", "fin_length"]
+    numeric_cols = list(set(numeric_cols) & set(selected_features))
 
     lower_bounds = {}
     upper_bounds = {}
