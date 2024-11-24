@@ -1,7 +1,7 @@
 # App.py
 import tkinter as tk
-from Task1 import Task1
-from Task2 import Task2
+from Task1Gui import Task1
+from Task2Gui import Task2
 
 
 class App:
