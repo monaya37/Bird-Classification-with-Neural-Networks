@@ -67,20 +67,21 @@ class Task2Functions:
         self.weights = np.random.randn(X.shape[1])    
         #مش عارف      
         for _ in range(self.epochs):
-            net = np.dot(self.weights, X) + self.bias
-            y_pred = self.activation_function(net) #sigmoid or tanh
-            error = y - y_pred
-            self.update_weights_and_bias(X, error)
+            #TO-DO:
+            # MLP
+            pass
 
 
 
         
             
     def sigmoid(self, net):
-        return 1 / 1 + np.exp(-net)
+        #TO-DO
+        return 
 
     def tanh(self, net):
-        return (2 / 1 + np.exp(-2 * net)) - 1
+        #TO-DO
+        return
    
     def update_weights_and_bias(self, X, error):
 
