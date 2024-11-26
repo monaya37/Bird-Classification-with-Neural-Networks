@@ -12,6 +12,31 @@ import seaborn as sns
 def read_file(path):
     return pd.read_csv(path)
 
+def split_to_train_test(dataset, classes, features):
+
+    train_data = []
+    test_data = []
+
+    for cls in classes:
+
+        class_data = dataset[dataset['bird category'] == cls]
+        class_data = shuffle(class_data, random_state = 0)  # Shuffle data within each class
+
+        # Select 30 samples for training and 20 for testing
+        train_data.append(class_data.iloc[:30])
+        test_data.append(class_data.iloc[30:])
+
+    train_data = pd.concat(train_data)
+    test_data = pd.concat(test_data)
+
+    X_train = train_data[features]
+    y_train = train_data['bird category']
+    X_test = test_data[features]
+    y_test = test_data['bird category']
+
+    return X_train, X_test, y_train, y_test
+
+
 def preprocess_features(X_train, X_test, selected_features):
 
     # Fill na

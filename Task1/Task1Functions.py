@@ -55,7 +55,7 @@ class Task1Functions:
             self.max = 1
 
         # Split based on selected
-        X_train, X_test, y_train, y_test = self.split_to_train_test(self.dataset)
+        X_train, X_test, y_train, y_test = split_to_train_test(self.dataset, self.selected_classes, self.selected_features)
 
         # Preprocess
         X_train, X_test = preprocess_features(X_train, X_test, self.selected_features)
@@ -186,35 +186,8 @@ class Task1Functions:
             accuracy = (TP + TN) / (TP + TN + FP + FN)
             accuracy *= 100
 
-        #print(f"Confusion Matrix:\nTP: {TP}, TN: {TN}, FP: {FP}, FN: {FN}")
-
         self.update_accuracy(accuracy)
         self.plot_confusion_matrix(TP, TN, FP, FN)
-
-
-    def split_to_train_test(self, dataset):
-
-        train_data = []
-        test_data = []
-
-        for cls in self.selected_classes:
-
-            class_data = dataset[dataset['bird category'] == cls]
-            class_data = shuffle(class_data, random_state = 0)  # Shuffle data within each class
-
-            # Select 30 samples for training and 20 for testing
-            train_data.append(class_data.iloc[:30])
-            test_data.append(class_data.iloc[30:])
-
-        train_data = pd.concat(train_data)
-        test_data = pd.concat(test_data)
-
-        X_train = train_data[self.selected_features]
-        y_train = train_data['bird category']
-        X_test = test_data[self.selected_features]
-        y_test = test_data['bird category']
-
-        return X_train, X_test, y_train, y_test
 
 
     def plot_function(self, X, Y):

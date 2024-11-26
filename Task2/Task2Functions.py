@@ -8,6 +8,9 @@ from random import shuffle
 from sklearn.utils import shuffle
 import seaborn as sns
 from Functions import *
+import math
+
+
 # task2 functions
 class Task2Functions:
 
@@ -39,23 +42,43 @@ class Task2Functions:
         self.learning_rate = float(self.gui.get_learning_rate())
         self.include_bias = self.gui.get_bias_state()
         self.activation_function = self.gui.get_algorithm_type()
-        self.gui.show_selected()
 
         if(self.activation_function == 'Sigmoid'):
-            return
+            self.activation_function = self.sigmoid
         else:
-            return
+            self.activation_function = self.tanh
+
+        self.gui.show_selected()
+
+        X_train, X_test, y_train, y_test = split_to_train_test(self.dataset, self.classes, self.features)
+
+        # Preprocess
+        X_train, X_test = preprocess_features(X_train, X_test, self.features)
+        y_train, y_test = preprocess_target(y_train, y_test)
 
 
-    def train_model(self, X_train, y_train):
-        #TO-DO
-        return
+
+
+    def train_model(self, X, y):
+        n = X.shape[0]
+        self.bias = 0
+        self.weights = np.random.randn(X.shape[1])    
+        #مش عارف      
+        for _ in range(self.epochs):
+            net = np.dot(self.weights, X) + self.bias
+            y_pred = self.activation_function(net)
+            error = y - y_pred
+            self.update_weights_and_bias(X, error)
+
+
+
+        
             
-    def sigmoid(self, x):
-        return 
+    def sigmoid(self, net):
+        return 1 / 1 + np.exp(-net)
 
-    def tanh(self, x):
-        return 
+    def tanh(self, net):
+        return (2 / 1 + np.exp(-2 * net)) - 1
    
     def update_weights_and_bias(self, X, error):
 
@@ -67,38 +90,14 @@ class Task2Functions:
 
         return self.weights, self.bias
 
-    def compute_error(self, X, y):
-
-        y_predict = np.dot(self.weights, X) + self.bias
-        y_predict = self.activation_function(y_predict)
-        error = y - y_predict
-
-        return error
 
     #predict test
     def predict(self, X):
 
         predictions = []
-        X = X.values
-
-        for i in range(X.shape[0]):
-            y_predict = np.dot(self.weights, X[i]) + self.bias
-            y_predict = self.activation_function(y_predict)
-            predictions.append(y_predict)
-
-        predictions = np.array(predictions)
-
-
+        #TO-DO
         return predictions
 
-
-    def split_to_train_test(self, dataset):
-        #TO-DO
-        train_data = []
-        test_data = []
-
-        #return X_train, X_test, y_train, y_test
-        return
 
 
     def plot_function(self, X, Y):
