@@ -36,8 +36,10 @@ class Task2Functions:
 
         #initilize global variables
         self.dataset = read_file('birds.csv')
-        self.features = ["gender", "body_mass", "beak_length", "beak_depth", "fin_length"]
+
         self.classes = ["A", "B", "C"]
+        self.features = ["gender", "body_mass", "beak_length", "beak_depth", "fin_length"]
+
         self.epochs = int(self.gui.get_epochs())
         self.learning_rate = float(self.gui.get_learning_rate())
         self.include_bias = self.gui.get_bias_state()
@@ -66,7 +68,7 @@ class Task2Functions:
         #مش عارف      
         for _ in range(self.epochs):
             net = np.dot(self.weights, X) + self.bias
-            y_pred = self.activation_function(net)
+            y_pred = self.activation_function(net) #sigmoid or tanh
             error = y - y_pred
             self.update_weights_and_bias(X, error)
 
