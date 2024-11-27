@@ -6,29 +6,33 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
 from random import shuffle
 from sklearn.utils import shuffle
 import seaborn as sns
-from Functions import *
+#from Functions import *
 import math
+
 
 # task2 functions
 class Task2Functions:
 
-    def __init__(self, gui):
+    def _init_(self, gui):
         self.gui = gui
 
         self.epochs = None
         self.learning_rate = None
         self.include_bias = None
-        self.activation_function = None
+        self.activation_function = None  # Store activation function
         self.dataset = None
         self.classes = None
         self.features = None
-
         self.min = None
         self.max = None
         self.weights = None
         self.bias = None
 
 
+
+
+
+   
     def preprocess_target(self, y_train, y_test):
         # Initialize the OneHotEncoder
         encoder = OneHotEncoder(sparse_output=False)  # sparse=False ensures that the output is a dense array
@@ -48,7 +52,7 @@ class Task2Functions:
         Main entry point for running the algorithm. Dynamically fetches required parameters and processes the dataset.
         """
         #initialize global variables
-        self.dataset = read_file('birds.csv')
+        self.dataset = self.read_file('birds.csv')
         self.epochs = int(self.gui.get_epochs())
         self.learning_rate = float(self.gui.get_learning_rate())
         self.include_bias = self.gui.get_bias_state()
@@ -58,16 +62,17 @@ class Task2Functions:
         self.num_of_neurons = int(self.gui.get_num_of_neurons())
         self.neurons = self.gui.get_neurons()
         self.gui.show_selected()
-        self.classes = ['A', 'B', 'C']
-        self.features = ['gender', 'body_mass', 'beak_length', 'beak_depth', 'fin_length']
+        self.selected_classes = ['A', 'B', 'C']
+        self.selected_features = ['gender', 'body_mass', 'beak_length', 'beak_depth', 'fin_length']
 
         # Split based on selected
-        X_train, X_test, y_train, y_test = split_to_train_test(self.dataset, self.classes, self.features)
+        X_train, X_test, y_train, y_test = split_to_train_test(self.dataset, self.selected_classes, self.selected_features)
 
+        print("el classes", self.selected_classes)
         # preprocess
-        X_train, X_test = preprocess_features(X_train, X_test, self.features)
+        X_train, X_test = preprocess_features(X_train, X_test, self.selected_features)
         y_train, y_test = self.preprocess_target(y_train, y_test)
-        #print("el yyyyyclasses", len(y_train))
+        print("el yyyyyclasses", len(y_train))
 
         # define input and output size
         input_size = X_train.shape[1]
@@ -76,7 +81,7 @@ class Task2Functions:
         unique_classes = np.unique(class_labels)
         output_size = len(unique_classes)
 
-        #print("output size",output_size)
+        print("output size",output_size)
 
         #output_size = len(np.unique(y_train))  # number of classes
         #print("output size", output_size)
@@ -161,7 +166,6 @@ class Task2Functions:
         bias_hidden_update = np.sum(hidden_gradient, axis=0, keepdims=True)
 
         return weights_input_hidden_update, weights_hidden_output_update, bias_hidden_update, bias_output_update
-    
     def train_model(self, X_train, y_train, input_size, hidden_size, output_size, learning_rate,
                     epochs, activation_function):
         # init w and b
@@ -228,8 +232,8 @@ class Task2Functions:
 
         # plot the confusion matrix using a heatmap
         sns.heatmap(confusion_matrix, annot=True, fmt="d", cmap="magma",
-                    xticklabels=self.classes,
-                    yticklabels=self.classes, ax=self.gui.ax2, cbar=False)
+                    xticklabels=self.selected_classes,
+                    yticklabels=self.selected_classes, ax=self.gui.ax2, cbar=False)
 
         # Set titles and labels
         self.gui.ax2.set_title("Confusion Matrix")

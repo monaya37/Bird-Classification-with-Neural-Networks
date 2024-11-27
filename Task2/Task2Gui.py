@@ -90,7 +90,7 @@ class Task2:
         self.label_algorithm.pack(anchor='w')
 
         self.radio_algorithm1 = tk.Radiobutton(self.algorithms_frame, text="Sigmoid", variable=self.algorithm_var, value="Sigmoid", font=large_font)
-        self.radio_algorithm2 = tk.Radiobutton(self.algorithms_frame, text="Tanh", variable=self.algorithm_var, value="Sigmoid", font=large_font)
+        self.radio_algorithm2 = tk.Radiobutton(self.algorithms_frame, text="Tanh", variable=self.algorithm_var, value="Tanh", font=large_font)
         self.radio_algorithm1.pack(anchor='w')
         self.radio_algorithm2.pack(anchor='w')
 
