@@ -224,17 +224,17 @@ class Task2Functions:
 
     def plot_confusion_matrix(self, confusion_matrix):
         # clear the plot
-        self.gui.ax2.clear()
+        self.gui.ax1.clear()
 
         # plot the confusion matrix using a heatmap
         sns.heatmap(confusion_matrix, annot=True, fmt="d", cmap="magma",
                     xticklabels=self.classes,
-                    yticklabels=self.classes, ax=self.gui.ax2, cbar=False)
+                    yticklabels=self.classes, ax=self.gui.ax1, cbar=False)
 
         # Set titles and labels
-        self.gui.ax2.set_title("Confusion Matrix")
-        self.gui.ax2.set_xlabel("Predicted Class")
-        self.gui.ax2.set_ylabel("Actual Class")
+        self.gui.ax1.set_title("Confusion Matrix")
+        self.gui.ax1.set_xlabel("Predicted Class")
+        self.gui.ax1.set_ylabel("Actual Class")
 
         # Draw the canvas
         self.gui.canvas.draw()
