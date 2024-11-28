@@ -23,36 +23,29 @@ class Task2Functions:
         self.classes = None
         self.features = None
 
-        self.min = None
-        self.max = None
-        self.weights = None
-        self.bias = None
+        self.weights_input_hidden = None
+        self.weights_hidden_output = None
+        self.bias_hidden = None
+        self.bias_output = None
 
 
-    def preprocess_target(self, y_train, y_test):
-        # Initialize the OneHotEncoder
-        encoder = OneHotEncoder(sparse_output=False)  # sparse=False ensures that the output is a dense array
 
-        # Convert pandas Series to numpy array and reshape to 2D
-        y_train = np.array(y_train).reshape(-1, 1)
-        y_test = np.array(y_test).reshape(-1, 1)
-
-        # Fit the encoder and transform the labels
-        y_train_one_hot = encoder.fit_transform(y_train)
-        y_test_one_hot = encoder.transform(y_test)
-        print(y_test_one_hot)
-        return y_train_one_hot, y_test_one_hot
 
     def run_algorithm(self):
-        """
-        Main entry point for running the algorithm. Dynamically fetches required parameters and processes the dataset.
-        """
+
         #initialize global variables
         self.dataset = read_file('birds.csv')
         self.epochs = int(self.gui.get_epochs())
         self.learning_rate = float(self.gui.get_learning_rate())
         self.include_bias = self.gui.get_bias_state()
         self.activation_function = self.gui.get_algorithm_type()
+        if(self.activation_function == 'Sigmoid'):
+            self.activation_function = self.sigmoid
+            self.activation_d = self.sigmoid_derivative
+        else:
+            self.activation_function = self.tanh
+            self.activation_d = self.tanh_derivative
+
         self.num_hidden_layers = int(self.gui.get_num_of_hidden_layers())
         self.hidden_layers = self.gui.get_hidden_layers()
         self.num_of_neurons = int(self.gui.get_num_of_neurons())
@@ -67,30 +60,31 @@ class Task2Functions:
         # preprocess
         X_train, X_test = preprocess_features(X_train, X_test, self.features)
         y_train, y_test = self.preprocess_target(y_train, y_test)
-        #print("el yyyyyclasses", len(y_train))
+        #y_train ==> [0,0,1] one hot encoded
 
-        # define input and output size
         input_size = X_train.shape[1]
         # find the class labels (the index of the '1' in each one-hot encoded vector)
         class_labels = np.argmax(y_train, axis=1)
+        #class_labels ==> [0,1,2, 2....] label encoded
+
+
         unique_classes = np.unique(class_labels)
+        print("unique: ", unique_classes)
         output_size = len(unique_classes)
+        print("output size: ", output_size)
 
-        #print("output size",output_size)
 
-        #output_size = len(np.unique(y_train))  # number of classes
-        #print("output size", output_size)
 
         #train
-        weights_input_hidden, weights_hidden_output, bias_hidden, bias_output = self.train_model(
-            X_train, y_train, input_size, self.num_hidden_layers, output_size,
-            self.learning_rate, self.epochs, self.activation_function)
+        self.train_model(
+            X_train, y_train, input_size, output_size)
 
         # test
-        y_test_predictions = self.predict_neural_network(X_test, weights_input_hidden, weights_hidden_output,
-                                                         bias_hidden, bias_output, self.activation_function)
+        y_test_predictions = self.predict_neural_network(X_test)
         # confusion metrics
         self.evaluate_predictions(y_test, y_test_predictions)
+
+
 
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
@@ -104,55 +98,46 @@ class Task2Functions:
     def tanh_derivative(self, x):
         return 1 - np.tanh(x)**2
 
-    def initialize_weights(self, input_size, hidden_size, output_size):
-
-
+    def initialize_weights(self, input_size, output_size):
+        hidden_size = self.num_hidden_layers
         #.uniform function generates random numbers from a uniform distribution.
-        weights_input_hidden = np.random.uniform(-0.5, 0.5, (input_size, hidden_size))
-        weights_hidden_output = np.random.uniform(-0.5, 0.5, (hidden_size, output_size))
-        bias_hidden = np.zeros((1, hidden_size)) # 1 bias term per neuron
-        bias_output = np.zeros((1, output_size))
-        return weights_input_hidden, weights_hidden_output, bias_hidden, bias_output
+        self.weights_input_hidden = np.random.uniform(-0.5, 0.5, (input_size, hidden_size))
+        self.weights_hidden_output = np.random.uniform(-0.5, 0.5, (hidden_size, output_size))
+        self.bias_hidden = np.zeros((1, hidden_size)) # 1 bias term per neuron
+        self.bias_output = np.zeros((1, output_size))
+
+        return self.weights_input_hidden, self.weights_hidden_output, self.bias_hidden, self.bias_output
 
     def softmax(self, x):
         exp_x = np.exp(x - np.max(x, axis=-1, keepdims=True))  # to avoid overflow
         return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
 
-    def forward_pass(self, X, weights_input_hidden, weights_hidden_output, bias_hidden, bias_output,
-                     activation_function):
+    def forward_pass(self, X):
         # hidden layer
-        hidden_input = np.dot(X, weights_input_hidden) + bias_hidden
-
-        # apply activ function for  hidden layer
-        if activation_function == "Sigmoid":
-            hidden_output = self.sigmoid(hidden_input)
-        elif activation_function == "Tanh":
-            hidden_output = self.tanh(hidden_input)
+        hidden_input = np.dot(X, self.weights_input_hidden) + self.bias_hidden
+        hidden_output = self.activation_function(hidden_input)
 
         # output layer
-        final_input = np.dot(hidden_output, weights_hidden_output) + bias_output
+        final_input = np.dot(hidden_output, self.weights_hidden_output) + self.bias_output
 
         # apply softmax 4 probabilities(since it is not binary classif)
         final_output = self.softmax(final_input)
 
         return hidden_input, hidden_output, final_input, final_output
 
-    def backward_pass(self, X, y, hidden_input, hidden_output, final_output, weights_hidden_output, learning_rate,
-                      activation_function):
+    def backward_pass(self, X, y, hidden_output, final_output):
 
         # output layer error and gradient
-        print("shape of y", y.shape)
-        print("shape of final out", final_output.shape)
+        #print("shape of y", y.shape)
+        #print("shape of final out", final_output.shape)
 
         output_error = y - final_output
         output_gradient = output_error * self.sigmoid_derivative(final_output)  # Output uses sigmoid
 
         # hidden layer error and GD
-        hidden_error = np.dot(output_gradient, weights_hidden_output.T)
-        if activation_function == "Sigmoid":
-            hidden_gradient = hidden_error * self.sigmoid_derivative(hidden_output)
-        elif activation_function == "Tanh":
-            hidden_gradient = hidden_error * self.tanh_derivative(hidden_output)
+        hidden_error = np.dot(output_gradient, self.weights_hidden_output.T)
+        hidden_gradient = hidden_error * self.activation_d(hidden_output)
+
 
         # updates for w and b
         weights_hidden_output_update = np.dot(hidden_output.T, output_gradient)
@@ -162,37 +147,47 @@ class Task2Functions:
 
         return weights_input_hidden_update, weights_hidden_output_update, bias_hidden_update, bias_output_update
     
-    def train_model(self, X_train, y_train, input_size, hidden_size, output_size, learning_rate,
-                    epochs, activation_function):
+    def train_model(self, X_train, y_train, input_size, output_size):
         # init w and b
-        weights_input_hidden, weights_hidden_output, bias_hidden, bias_output = self.initialize_weights(
-            input_size, hidden_size, output_size)
+        self.initialize_weights(
+            input_size, output_size)
 
-        for epoch in range(epochs):
+        for _ in range(self.epochs):
             # forward prop
             hidden_input, hidden_output, final_input, final_output = self.forward_pass(
-                X_train, weights_input_hidden, weights_hidden_output, bias_hidden, bias_output, activation_function)
+                X_train)
 
             # back prop
             weights_input_hidden_update, weights_hidden_output_update, bias_hidden_update, bias_output_update = self.backward_pass(
-                X_train, y_train, hidden_input, hidden_output, final_output, weights_hidden_output, learning_rate, activation_function)
+                X_train, y_train, hidden_output, final_output)
 
             # update w and b after every epoch
-            weights_input_hidden += learning_rate * weights_input_hidden_update
-            weights_hidden_output += learning_rate * weights_hidden_output_update
-            bias_hidden += learning_rate * bias_hidden_update
-            bias_output += learning_rate * bias_output_update
+            self.weights_input_hidden += self.learning_rate * weights_input_hidden_update
+            self.weights_hidden_output += self.learning_rate * weights_hidden_output_update
+            self.bias_hidden += self.learning_rate * bias_hidden_update
+            self.bias_output += self.learning_rate * bias_output_update
 
-        return weights_input_hidden, weights_hidden_output, bias_hidden, bias_output
+        return
 
-    def predict_neural_network(self, X, weights_input_hidden, weights_hidden_output, bias_hidden, bias_output,
-                               activation_function):
+    def predict_neural_network(self, X):
         # forward prop 4 predictions
-        _, _, _, final_output = self.forward_pass(X, weights_input_hidden, weights_hidden_output, bias_hidden,
-                                                  bias_output, activation_function)
+        _, _, _, final_output = self.forward_pass(X)
 
         # index of the class with the highest prob
         return np.argmax(final_output, axis=1)
+    
+    def preprocess_target(self, y_train, y_test):
+        # Initialize the OneHotEncoder
+        encoder = OneHotEncoder(sparse_output=False)  # sparse=False ensures that the output is a dense array
+
+        # Convert pandas Series to numpy array and reshape to 2D
+        y_train = np.array(y_train).reshape(-1, 1)
+        y_test = np.array(y_test).reshape(-1, 1)
+
+        # Fit the encoder and transform the labels
+        y_train_one_hot = encoder.fit_transform(y_train)
+        y_test_one_hot = encoder.transform(y_test)
+        return y_train_one_hot, y_test_one_hot
 
     def evaluate_predictions(self, y_test, y_predictions):
         #y_test or y_predictions are 1 hot encoded, use argmax to convert to class indices
