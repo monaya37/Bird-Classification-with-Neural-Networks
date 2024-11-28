@@ -34,25 +34,7 @@ class Task1Functions:
     # Functions
     def run_algorithm(self):
 
-        #initilize global variables
-        self.dataset = read_file('birds.csv')
-        self.epochs = int(self.gui.get_epochs())
-        self.learning_rate = float(self.gui.get_learning_rate())
-        self.threshold = float(self.gui.get_threshold())
-        self.selected_features = self.gui.get_selected_features()
-        self.selected_classes = self.gui.get_selected_classes()
-        self.include_bias = self.gui.get_bias_state()
-        self.algorithm_type = self.gui.get_algorithm_type()
-        self.gui.show_selected()
-
-        if(self.algorithm_type == 'Perceptron'):
-            self.activation_function = self.signum
-            self.min = -1
-            self.max = 1
-        else:
-            self.activation_function = self.linear
-            self.min = 0
-            self.max = 1
+        self.initialize_variables()
 
         # Split based on selected
         X_train, X_test, y_train, y_test = split_to_train_test(self.dataset, self.selected_classes, self.selected_features)
@@ -74,6 +56,26 @@ class Task1Functions:
         self.plot_function(X_train, y_train)
 
 
+    def initialize_variables(self):
+        #initilize global variables
+        self.dataset = read_file('birds.csv')
+        self.epochs = int(self.gui.get_epochs())
+        self.learning_rate = float(self.gui.get_learning_rate())
+        self.threshold = float(self.gui.get_threshold())
+        self.selected_features = self.gui.get_selected_features()
+        self.selected_classes = self.gui.get_selected_classes()
+        self.include_bias = self.gui.get_bias_state()
+        self.algorithm_type = self.gui.get_algorithm_type()
+        self.gui.show_selected()
+
+        if(self.algorithm_type == 'Perceptron'):
+            self.activation_function = self.signum
+            self.min = -1
+            self.max = 1
+        else:
+            self.activation_function = self.linear
+            self.min = 0
+            self.max = 1
  
     def train_model(self, X_train, y_train):
 
