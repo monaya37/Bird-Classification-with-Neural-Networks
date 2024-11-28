@@ -101,6 +101,8 @@ class Task2Functions:
             # back prop
             self.backward_pass(
                 y_train, final_output)
+        y_pred = self.predict_neural_network(X_train)
+        self.evaluate_predictions(y_train, y_pred)
 
         return
 
@@ -202,6 +204,7 @@ class Task2Functions:
         correct_predictions = np.trace(confusion_matrix)  # TP for all classes
         total_predictions = np.sum(confusion_matrix)
         accuracy = correct_predictions / total_predictions
+        print("Accuracy: ", accuracy)
 
         self.gui.accuracy_label.config(text=f"Accuracy: {accuracy * 100:.2f}%")
         self.plot_confusion_matrix(confusion_matrix)
