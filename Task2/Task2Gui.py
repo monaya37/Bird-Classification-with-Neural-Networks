@@ -1,7 +1,7 @@
 
 import tkinter as tk
 from tkinter import ttk, messagebox
-from Task2.Task2Functions2  import *
+from Task2.Task2Functions  import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -10,7 +10,7 @@ class Task2:
     def __init__(self, parent):
 
         self.parent = parent
-        self.functions = Task2Functions2(self)
+        self.functions = Task2Functions(self)
         large_font = ('Helvetica', 14)  # Change the font to Arial
 
         # Create main frame

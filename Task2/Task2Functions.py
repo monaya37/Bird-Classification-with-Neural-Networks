@@ -7,7 +7,6 @@ from random import shuffle
 from sklearn.utils import shuffle
 import seaborn as sns
 from Functions import *
-import math
 
 # task2 functions
 class Task2Functions:
@@ -19,49 +18,55 @@ class Task2Functions:
         self.learning_rate = None
         self.include_bias = None
         self.activation_function = None
+
         self.dataset = None
         self.classes = None
         self.features = None
 
-        self.weights_input_hidden = None
-        self.weights_hidden_output = None
-        self.bias_hidden = None
-        self.bias_output = None
+        self.weights = None
+        self.biases = None
+        self.layers = None #all layers
+        self.inputs = []
 
 
     def run_algorithm(self):
 
-        #initialize global variables
         self.initialize_variables()
         
-        # Split based on selected
         X_train, X_test, y_train, y_test = split_to_train_test(
             self.dataset, self.classes, self.features)
 
         # preprocess
         X_train, X_test = preprocess_features(X_train, X_test, self.features)
-        y_train, y_test = self.preprocess_target(y_train, y_test)
-        #y_train ==> [0,0,1] one hot encoded
+        y_train, y_test = self.preprocess_target(y_train, y_test) #y_train ==> [0,0,1] one hot encoded
 
         input_size = X_train.shape[1]
         output_size = len(self.classes)
 
         #train
         self.train_model(X_train, y_train, input_size, output_size)
-
         #test
         y_pred = self.predict_neural_network(X_test)
-        # confusion metrics
+
         self.evaluate_predictions(y_test, y_pred)
 
 
     def initialize_variables(self):
-        #initialize global variables
+
         self.dataset = read_file('birds.csv')
+        self.classes = ['A', 'B', 'C']
+        self.features = ['gender', 'body_mass', 'beak_length', 'beak_depth', 'fin_length']
+
         self.epochs = int(self.gui.get_epochs())
         self.learning_rate = float(self.gui.get_learning_rate())
         self.include_bias = self.gui.get_bias_state()
         self.activation_function = self.gui.get_algorithm_type()
+
+        self.neurons = self.gui.get_neurons()
+
+        self.weights = []
+        self.biases = []
+
         if(self.activation_function == 'Sigmoid'):
             self.activation_function = self.sigmoid
             self.activation_d = self.sigmoid_derivative
@@ -69,10 +74,6 @@ class Task2Functions:
             self.activation_function = self.tanh
             self.activation_d = self.tanh_derivative
 
-        self.neurons = self.gui.get_neurons()
-        self.gui.show_selected()
-        self.classes = ['A', 'B', 'C']
-        self.features = ['gender', 'body_mass', 'beak_length', 'beak_depth', 'fin_length']
         return
 
     def sigmoid(self, x):
@@ -87,24 +88,37 @@ class Task2Functions:
     def tanh_derivative(self, x):
         return 1 - np.tanh(x)**2
 
+    def train_model(self, X_train, y_train, input_size, output_size):
+        
+        # init weights and bias
+        self.initialize_weights(input_size, output_size)
+
+        for _ in range(self.epochs):
+            # forward prop
+            final_output = self.forward_pass(
+                X_train)
+
+            # back prop
+            self.backward_pass(
+                y_train, final_output)
+
+        return
+
     def initialize_weights(self, input_size, output_size):
-        hidden_size = self.num_hidden_layers
+        #hidden_size = self.num_hidden_layers
+        self.layers = []
+        self.layers.append(input_size)
+        self.layers.extend(self.neurons)
+        self.layers.append(output_size)
 
-        #.uniform function generates random numbers from a uniform distribution.
-        self.weights_input_hidden = np.random.uniform(-0.5, 0.5, (input_size, hidden_size))
-        self.weights_hidden_output = np.random.uniform(-0.5, 0.5, (hidden_size, output_size))
-        self.bias_hidden = np.zeros((1, hidden_size)) # 1 bias term per neuron
-        self.bias_output = np.zeros((1, output_size))
+        layer_weights = []
+        layer_bias = []
 
-
-        print("self.weights_input_hidden")
-        print(self.weights_input_hidden)
-        print("self.weights_hidden_output")
-        print(self.weights_hidden_output)
-        print("self.bias_hidden")
-        print(self.bias_hidden)
-        print("self.bias_output")
-        print(self.bias_output)
+        for i in range(len(self.layers) - 1):
+            layer_weights = np.random.randn(self.layers[i], self.layers[i+1]) * 0.1  # small random weights
+            layer_bias = np.zeros((1, self.layers[i+1]))  # small random biases
+            self.weights.append(layer_weights)
+            self.biases.append(layer_bias)
 
         return 
 
@@ -113,69 +127,50 @@ class Task2Functions:
         return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
 
     def forward_pass(self, X):
+        self.inputs = [X]
 
-        # hidden layer
-        hidden_input = np.dot(X, self.weights_input_hidden) + self.bias_hidden
-        hidden_output = self.activation_function(hidden_input)
-        print("hidden output: ", hidden_output)
+        # Hidden Layers
+        for i in range(len(self.weights)-1):
+            if(self.include_bias):
+                net = np.dot(self.inputs[-1], self.weights[i]) + self.biases[i]
+            else:
+                net = np.dot(self.inputs[-1], self.weights[i])
 
-
-        # output layer
-        final_input = np.dot(hidden_output, self.weights_hidden_output) + self.bias_output
-
-        # apply softmax 4 probabilities(since it is not binary classif)
-        final_output = self.softmax(final_input)
-        return hidden_output, final_output
-
-    def backward_pass(self, X, y, hidden_output, final_output):
-
-        # output layer error and gradient
-        output_error = y - final_output
-        output_gradient = output_error * self.sigmoid_derivative(final_output)  # Output uses sigmoid
-
-        # hidden layer error and GD
-        hidden_error = np.dot(output_gradient, self.weights_hidden_output.T)
-        hidden_gradient = hidden_error * self.activation_d(hidden_output)
-
-
-        # updates for w and b
-        weights_hidden_output_update = np.dot(hidden_output.T, output_gradient)
-        weights_input_hidden_update = np.dot(X.T, hidden_gradient)
-
-        bias_output_update = np.sum(output_gradient, axis=0, keepdims=True)
-        bias_hidden_update = np.sum(hidden_gradient, axis=0, keepdims=True)
-
-        return weights_input_hidden_update, weights_hidden_output_update, bias_hidden_update, bias_output_update
-    
-    def train_model(self, X_train, y_train, input_size, output_size):
+            output = self.activation_function(net)
+            self.inputs.append(output)
         
-        # init weights and bias
-        self.initialize_weights(input_size, output_size)
+        # Output Layer
+        if(self.include_bias):
+            net = np.dot(self.inputs[-1], self.weights[-1]) + self.biases[-1]
+        else:
+            net = np.dot(self.inputs[-1], self.weights[-1])
 
-        for _ in range(self.epochs):
-            # forward prop
-            hidden_output, final_output = self.forward_pass(
-                X_train)
+        output = self.softmax(net)
+        self.inputs.append(output)
 
-            # back prop
-            weights_input_hidden_update, weights_hidden_output_update, bias_hidden_update, bias_output_update = self.backward_pass(
-                X_train, y_train, hidden_output, final_output)
+        return self.inputs[-1]
 
-            # update w and b after every epoch
-            self.weights_input_hidden += self.learning_rate * weights_input_hidden_update
-            self.weights_hidden_output += self.learning_rate * weights_hidden_output_update
-            self.bias_hidden += self.learning_rate * bias_hidden_update
-            self.bias_output += self.learning_rate * bias_output_update
+    def backward_pass(self, y, final_output):
 
-        return
+        output_error = y - final_output
+        sigma = output_error * self.activation_d(final_output)  # Output uses sigmoid
 
+        #update weights and bias
+        for i in reversed(range(len(self.weights))):
+
+            self.weights[i] += self.learning_rate * np.dot(self.inputs[i].T, sigma)
+            if(self.include_bias):
+                self.biases[i] += self.learning_rate * np.sum(sigma, axis=0, keepdims=True)
+
+            if i > 0: #if its not input layer
+                sigma = np.dot(sigma, self.weights[i].T) * self.activation_d(self.inputs[i])
+
+        return 
+    
     def predict_neural_network(self, X):
-        # forward prop 4 predictions
-        _, final_output = self.forward_pass(X)
-
-        # index of the class with the highest prob
+        # forward prop for predictions
+        final_output = self.forward_pass(X)
         y_pred = np.argmax(final_output, axis=1)
-        print("y_pred", y_pred)
         return y_pred
     
     def preprocess_target(self, y_train, y_test):
@@ -200,13 +195,8 @@ class Task2Functions:
         # init confusion matrix for the 3 classes
         confusion_matrix = np.zeros((3, 3), dtype=int)
 
-
-
         # update confusion matrix with np.add.at
         np.add.at(confusion_matrix, (y_test, y_predictions), 1)
-
-        print("Confusion Matrix:")
-        print(confusion_matrix)
 
         # calculate accuracy
         correct_predictions = np.trace(confusion_matrix)  # TP for all classes
