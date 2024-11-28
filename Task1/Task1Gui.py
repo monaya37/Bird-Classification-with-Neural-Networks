@@ -2,7 +2,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
 from Task1.Task1Functions  import *
-from Task2.Task2Functions  import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 

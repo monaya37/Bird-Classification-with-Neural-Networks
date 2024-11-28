@@ -1,0 +1,8 @@
+#questionssss:
+def backward_pass(self, X, y, hidden_output, final_output):
+
+    # output layer error and gradient
+    output_error = y - final_output
+    output_gradient = output_error * self.sigmoid_derivative(final_output)  # hmmmmmmmmmm???
+
+#include bias in not handled

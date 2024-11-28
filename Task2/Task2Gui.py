@@ -1,7 +1,7 @@
 
 import tkinter as tk
 from tkinter import ttk, messagebox
-from Task2.Task2Functions  import *
+from Task2.Task2Functions2  import *
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -10,7 +10,7 @@ class Task2:
     def __init__(self, parent):
 
         self.parent = parent
-        self.functions = Task2Functions(self)
+        self.functions = Task2Functions2(self)
         large_font = ('Helvetica', 14)  # Change the font to Arial
 
         # Create main frame
@@ -24,31 +24,9 @@ class Task2:
         self.canvas.get_tk_widget().grid(row=4, column=0, columnspan=4)
 
         # Frame for layers
-        self.layers_frame = tk.Frame(self.frame)
-        self.layers_frame.grid(row=0, column=0, padx=20)
-
-        # Hidden layers
-        self.num_hidden_layers = tk.Label(self.layers_frame, text="Number of Hidden Layers:", font=large_font)
-        self.num_hidden_layers.pack(anchor='w')
-        self.num_hidden_layers = tk.Entry(self.layers_frame, font=large_font)
-        self.num_hidden_layers.insert(0, "3")
-        self.num_hidden_layers.pack(anchor='w')
-
-        self.hidden_layers = tk.Label(self.layers_frame, text="Enter Hidden Layers:", font=large_font)
-        self.hidden_layers.pack(anchor='w')
-        self.hidden_layers = tk.Entry(self.layers_frame, font=large_font)
-        self.hidden_layers.insert(0, "3")
-        self.hidden_layers.pack(anchor='w')
-
-        # Frame for Classes
         self.neurons_frame = tk.Frame(self.frame)
-        self.neurons_frame.grid(row=0, column=1, padx=20)
+        self.neurons_frame.grid(row=0, column=0, padx=20)
 
-        self.num_of_neurons = tk.Label(self.neurons_frame, text="Number of Neurons:", font=large_font)
-        self.num_of_neurons.pack(anchor='w')
-        self.num_of_neurons = tk.Entry(self.neurons_frame, font=large_font)
-        self.num_of_neurons.insert(0, "3")
-        self.num_of_neurons.pack(anchor='w')
 
         self.neurons = tk.Label(self.neurons_frame, text="Enter Neurons:", font=large_font)
         self.neurons.pack(anchor='w')
@@ -58,7 +36,7 @@ class Task2:
 
         # Frame for textboxes
         self.textboxes_frame = tk.Frame(self.frame)
-        self.textboxes_frame.grid(row=0, column=2, padx=20)
+        self.textboxes_frame.grid(row=0, column=1, padx=20)
 
         # Epochs
         self.label_epochs = tk.Label(self.textboxes_frame, text="Epochs:", font=large_font)
@@ -82,7 +60,7 @@ class Task2:
 
         # Frame for algorithms
         self.algorithms_frame = tk.Frame(self.frame)
-        self.algorithms_frame.grid(row=0, column=3, padx=20)
+        self.algorithms_frame.grid(row=0, column=2, padx=20)
 
         # Algorithm Type Radio Buttons
         self.algorithm_var = tk.StringVar(value="Sigmoid")
@@ -117,21 +95,10 @@ class Task2:
     def get_learning_rate(self):
         return self.learning_rate_entry.get()
 
-    def get_num_of_hidden_layers(self):
-        return self.num_hidden_layers.get()
-
-    def get_hidden_layers(self):
-        neuron_values = self.hidden_layers.get().split(",")  
-        neuron_values = [int(x) for x in neuron_values] 
-        print(neuron_values)  
-    
-    def get_num_of_neurons(self):
-        return self.num_of_neurons.get()
-
     def get_neurons(self):
-            neuron_values = self.neurons.get().split(",")  # Split by comma
-            neuron_values = [int(x) for x in neuron_values]  # Convert to integers
-            print(neuron_values)  # Output the list
+        neuron_values = self.neurons.get().split(",")  # Split by comma
+        neuron_values = [int(x) for x in neuron_values]  # Convert to integers
+        return neuron_values
 
     def get_bias_state(self):
         return self.bias_var.get()
@@ -143,9 +110,8 @@ class Task2:
         print("Selected Options", 
                         f"Learning Rate: {self.get_learning_rate()}\n"
                         f"Include Bias: {self.bias_var.get()}\n"
-                        f"Algorithm Type: {self.get_algorithm_type()}\n")
-        self.get_hidden_layers()
-        self.get_neurons()
+                        f"Algorithm Type: {self.get_algorithm_type()}\n"
+                        f"Neurons in each Hiddden Layer: {self.get_neurons()}\n")
         
     #GUI Functions
     def display(self):
