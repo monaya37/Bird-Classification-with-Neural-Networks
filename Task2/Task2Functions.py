@@ -29,10 +29,32 @@ class Task2Functions:
         self.bias_output = None
 
 
-
-
     def run_algorithm(self):
 
+        #initialize global variables
+        self.initialize_variables()
+        
+        # Split based on selected
+        X_train, X_test, y_train, y_test = split_to_train_test(
+            self.dataset, self.classes, self.features)
+
+        # preprocess
+        X_train, X_test = preprocess_features(X_train, X_test, self.features)
+        y_train, y_test = self.preprocess_target(y_train, y_test)
+        #y_train ==> [0,0,1] one hot encoded
+
+        input_size = X_train.shape[1]
+        output_size = len(self.classes)
+
+        #train
+        self.train_model(X_train, y_train, input_size, output_size)
+
+        #test
+        y_pred = self.predict_neural_network(X_test)
+        # confusion metrics
+        self.evaluate_predictions(y_test, y_pred)
+
+    def initialize_variables(self):
         #initialize global variables
         self.dataset = read_file('birds.csv')
         self.epochs = int(self.gui.get_epochs())
@@ -53,38 +75,7 @@ class Task2Functions:
         self.gui.show_selected()
         self.classes = ['A', 'B', 'C']
         self.features = ['gender', 'body_mass', 'beak_length', 'beak_depth', 'fin_length']
-
-        # Split based on selected
-        X_train, X_test, y_train, y_test = split_to_train_test(self.dataset, self.classes, self.features)
-
-        # preprocess
-        X_train, X_test = preprocess_features(X_train, X_test, self.features)
-        y_train, y_test = self.preprocess_target(y_train, y_test)
-        #y_train ==> [0,0,1] one hot encoded
-
-        input_size = X_train.shape[1]
-        # find the class labels (the index of the '1' in each one-hot encoded vector)
-        class_labels = np.argmax(y_train, axis=1)
-        #class_labels ==> [0,1,2, 2....] label encoded
-
-
-        unique_classes = np.unique(class_labels)
-        print("unique: ", unique_classes)
-        output_size = len(unique_classes)
-        print("output size: ", output_size)
-
-
-
-        #train
-        self.train_model(
-            X_train, y_train, input_size, output_size)
-
-        # test
-        y_test_predictions = self.predict_neural_network(X_test)
-        # confusion metrics
-        self.evaluate_predictions(y_test, y_test_predictions)
-
-
+        return
 
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))
@@ -100,6 +91,7 @@ class Task2Functions:
 
     def initialize_weights(self, input_size, output_size):
         hidden_size = self.num_hidden_layers
+
         #.uniform function generates random numbers from a uniform distribution.
         self.weights_input_hidden = np.random.uniform(-0.5, 0.5, (input_size, hidden_size))
         self.weights_hidden_output = np.random.uniform(-0.5, 0.5, (hidden_size, output_size))
@@ -113,6 +105,7 @@ class Task2Functions:
         return exp_x / np.sum(exp_x, axis=-1, keepdims=True)
 
     def forward_pass(self, X):
+
         # hidden layer
         hidden_input = np.dot(X, self.weights_input_hidden) + self.bias_hidden
         hidden_output = self.activation_function(hidden_input)
@@ -123,14 +116,11 @@ class Task2Functions:
         # apply softmax 4 probabilities(since it is not binary classif)
         final_output = self.softmax(final_input)
 
-        return hidden_input, hidden_output, final_input, final_output
+        return hidden_output, final_output
 
     def backward_pass(self, X, y, hidden_output, final_output):
 
         # output layer error and gradient
-        #print("shape of y", y.shape)
-        #print("shape of final out", final_output.shape)
-
         output_error = y - final_output
         output_gradient = output_error * self.sigmoid_derivative(final_output)  # Output uses sigmoid
 
@@ -148,13 +138,13 @@ class Task2Functions:
         return weights_input_hidden_update, weights_hidden_output_update, bias_hidden_update, bias_output_update
     
     def train_model(self, X_train, y_train, input_size, output_size):
-        # init w and b
-        self.initialize_weights(
-            input_size, output_size)
+        
+        # init weights and bias
+        self.initialize_weights(input_size, output_size)
 
         for _ in range(self.epochs):
             # forward prop
-            hidden_input, hidden_output, final_input, final_output = self.forward_pass(
+            hidden_output, final_output = self.forward_pass(
                 X_train)
 
             # back prop
@@ -171,20 +161,19 @@ class Task2Functions:
 
     def predict_neural_network(self, X):
         # forward prop 4 predictions
-        _, _, _, final_output = self.forward_pass(X)
+        _, final_output = self.forward_pass(X)
 
         # index of the class with the highest prob
         return np.argmax(final_output, axis=1)
     
     def preprocess_target(self, y_train, y_test):
-        # Initialize the OneHotEncoder
+
         encoder = OneHotEncoder(sparse_output=False)  # sparse=False ensures that the output is a dense array
 
         # Convert pandas Series to numpy array and reshape to 2D
         y_train = np.array(y_train).reshape(-1, 1)
         y_test = np.array(y_test).reshape(-1, 1)
 
-        # Fit the encoder and transform the labels
         y_train_one_hot = encoder.fit_transform(y_train)
         y_test_one_hot = encoder.transform(y_test)
         return y_train_one_hot, y_test_one_hot
@@ -211,7 +200,6 @@ class Task2Functions:
         correct_predictions = np.trace(confusion_matrix)  # TP for all classes
         total_predictions = np.sum(confusion_matrix)
         accuracy = correct_predictions / total_predictions
-        print("accuracy:", accuracy)
 
         self.gui.accuracy_label.config(text=f"Accuracy: {accuracy * 100:.2f}%")
         self.plot_confusion_matrix(confusion_matrix)
