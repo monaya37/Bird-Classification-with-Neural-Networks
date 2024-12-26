@@ -43,6 +43,7 @@ class Task1Functions:
         X_train, X_test = preprocess_features(X_train, X_test, self.selected_features)
         y_train, y_test = preprocess_target(y_train, y_test)
 
+        # mapping
         if (self.algorithm_type == "Perceptron"):
             y_train = np.array([1 if y == 1 else -1 for y in y_train])
             y_test = np.array([1 if y == 1 else -1 for y in y_test])

@@ -28,6 +28,12 @@ class Task2:
         self.neurons_frame.grid(row=0, column=0, padx=20)
 
 
+        self.hidden_size = tk.Label(self.neurons_frame, text="Enter Number of Hidden Layers:", font=large_font)
+        self.hidden_size.pack(anchor='w')
+        self.hidden_size = tk.Entry(self.neurons_frame, font=large_font)
+        self.hidden_size.insert(0, "3")
+        self.hidden_size.pack(anchor='w')
+
         self.neurons = tk.Label(self.neurons_frame, text="Enter Neurons:", font=large_font)
         self.neurons.pack(anchor='w')
         self.neurons = tk.Entry(self.neurons_frame, font=large_font)
@@ -64,7 +70,7 @@ class Task2:
 
         # Algorithm Type Radio Buttons
         self.algorithm_var = tk.StringVar(value="Sigmoid")
-        self.label_algorithm = tk.Label(self.algorithms_frame, text="Algorithm Type:", font=large_font)
+        self.label_algorithm = tk.Label(self.algorithms_frame, text="Activation Function:", font=large_font)
         self.label_algorithm.pack(anchor='w')
 
         self.radio_algorithm1 = tk.Radiobutton(self.algorithms_frame, text="Sigmoid", variable=self.algorithm_var, value="Sigmoid", font=large_font)
