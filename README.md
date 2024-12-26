@@ -40,8 +40,8 @@ Both tasks achieved an accuracy ranging from **95% to 100%**.
   <img src="https://github.com/monaya37/NN-Tasks/blob/b238ee6f97faf0012108eace718cbe21dba426b1/GUI.png" alt="GUI" width="500" height="400"/>
 </span>
 
-<span style="display: inline-block; text-align: center;">
-  <img src="https://github.com/monaya37/NN-Tasks/blob/9265e4a9299d49fe5b039946371559496adad203/Task2%20GUI.png" alt="GUI" width="500" height="400"/>
+<span style="display: inline-block; text-align: center; margin-left: 10px;">
+  <img src="https://github.com/monaya37/NN-Tasks/blob/9265e4a9299d49fe5b039946371559496adad203/Task2%20GUI.png" alt="GUI" width="450" height="400"/>
 </span>
 
 ## Thank You
