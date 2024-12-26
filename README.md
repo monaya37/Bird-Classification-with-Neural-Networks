@@ -44,6 +44,6 @@ Both tasks achieved an accuracy ranging from **95% to 100%**.
   <img src="https://github.com/monaya37/NN-Tasks/blob/9265e4a9299d49fe5b039946371559496adad203/Task2%20GUI.png" alt="GUI" width="500" height="400"/>
 </span>
 
-## Thank You
+## Team Members:
 
 This project was built with my team ([@SalmaNasrEldin](https://github.com/SalmaNasrEldin), [@marwa-ehab](https://github.com/marwa-ehab), [@SmaherNabil](https://github.com/SmaherNabil), [@zeinabsakran77](https://github.com/zeinabsakran77), [@sa10ma](https://github.com/sa10ma)). We also worked on another neural network project together—click [here](https://github.com/monaya37/Forum-Discussions-Categorization) to see our really neat work! 🤓
