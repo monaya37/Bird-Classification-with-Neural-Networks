@@ -46,4 +46,4 @@ Both tasks achieved an accuracy ranging from **95% to 100%**.
 
 ## Thank You
 
-This project was built with my team ([@SalmaNasrEldin](https://github.com/SalmaNasrEldin), [@marwa-ehab](https://github.com/marwa-ehab), [@SmaherNabil](https://github.com/SmaherNabil), [@zeinabsakran77](https://github.com/zeinabsakran77), [@sa10ma](https://github.com/sa10ma)). We also worked on another neural network project together—click [here](link) to see our really neat work! 🤓
+This project was built with my team ([@SalmaNasrEldin](https://github.com/SalmaNasrEldin), [@marwa-ehab](https://github.com/marwa-ehab), [@SmaherNabil](https://github.com/SmaherNabil), [@zeinabsakran77](https://github.com/zeinabsakran77), [@sa10ma](https://github.com/sa10ma)). We also worked on another neural network project together—click [here](https://github.com/monaya37/Forum-Discussions-Categorization) to see our really neat work! 🤓
